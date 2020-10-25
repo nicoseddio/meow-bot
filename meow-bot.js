@@ -5,25 +5,26 @@
 const Discord = require('discord.js');
 const auth = require('./auth.json');
 
-var channels = {
+let channels = {
+    "welcome": "739292295236550676",
     "announcements": "726987017778495488",
     "cat-cafe": "767240063301713951",
     "commonroom": "726982067941802108",
     "testing-channel": "769727793352802314",
     "bot-spam": "769696060737847348",
 }
-var roles = {
+let roles = {
     'Host': '726983794002886731',
     'dev': '769661278884724787',
     'cat-god': '767239576762318852',
 }
-var users = {
+let users = {
     "nikorokia": "446468247756341250",
 }
-var guilds = {
+let guilds = {
     "thejasminedragon": "726982067136757853",
 }
-var moderateCats = true;
+let moderateCats = true;
 const botOwner = users["nikorokia"]; //default 'special-user'
 const string_commandsList = `
 Meow!
@@ -106,9 +107,9 @@ client.on("message", function(message) {
         case "meow-remove":
             // message.delete();
             // if (checkRole("cat-god", message)) {
-            //     var m = 1;
+            //     let m = 1;
             //     if (args.length > 0) m = args[0];
-            //     var ms = message.channel.messages.fetch({limit:m}).then(messages => {
+            //     let ms = message.channel.messages.fetch({limit:m}).then(messages => {
             //         let lastmessage = messages.last();
             //         message.channel.send(lastmessage.content);
             //     })
@@ -117,8 +118,8 @@ client.on("message", function(message) {
             break;
         case "meow-schrodinger": //intentional fall-through
         case "meow-quantum":
-            var randomnum = Math.random();
-            var threshhold = 0.5;
+            const randomnum = Math.random();
+            const threshhold = 0.5;
             if (randomnum < threshhold)
                 message.channel.send("Your cat is dead! |0>, q("+randomnum+")");
             else
@@ -209,13 +210,16 @@ async function delayedReply(message, response, maxTimeout = 2) {
 function parseMessageLink(link) {
     log(`Attempting to parse link: ${link}`)
     try{
-        var ls = link.split('/');
-        var ids = {
+        const ls = link.split('/');
+        const ids = {
             "guildID": ls[4],
             "channelID": ls[5],
             "messageID": ls[6]
         };
-        log(`Parse Successful: Guild ID: ${ids["guildID"]}, Channel ID: ${ids["channelID"]}, Message ID: ${ids["messageID"]}`);
+        log(`Parse Successful:`
+            +` Guild ID: ${ids["guildID"]},`
+            +` Channel ID: ${ids["channelID"]},`
+            +` Message ID: ${ids["messageID"]}`);
         return {"success": true, "ids": ids};
     } catch(error) {
         log("Parse Failure, error:" + error);
