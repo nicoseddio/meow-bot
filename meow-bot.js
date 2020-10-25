@@ -13,16 +13,35 @@ var channels = {
     "cat-cafe": "767240063301713951",
     "commonroom": "726982067941802108",
     "testing-channel": "769727793352802314",
+    "bot-spam": "769696060737847348",
 }
 var roles = {
     'Host': '726983794002886731',
     'dev': '769661278884724787',
     'cat-god': '767239576762318852',
 }
+var users = {
+    "nikorokia": "446468247756341250",
+}
+var guilds = {
+    "thejasminedragon": "726982067136757853",
+}
 var moderateCats = true;
+var botOwner = users["nikorokia"]; //default 'special-user'
+const commandsList = `
+Meow!
+meow-bot supports the following commands:
+    !meow
+    !meow-commands
+    !meow-ping
+    !meow-quantum
+    !meow-version
+Enjoy your meow-bot!`
 
 const client = new Discord.Client();
+//normal hosting config
 client.login(auth.token);
+//Heroku hosting config
 //client.login(process.env.BOT_TOKEN);//BOT_TOKEN is the Client Secret
 
 client.on('ready', () => {
@@ -45,13 +64,14 @@ client.on("message", function(message) {
         //engagement
         if (message.attachments.size > 0
             || message.content.includes("http"))
-                message.channel.send("cat");
+                delayedReply(message, "cat", 900);
     }
 
     if (message.channel.id === channels['testing-channel']) {
     }
 
-    if (message.mentions.has('769241485617922088', {ignoreDirect: false})) message.reply("meow!");
+    if (message.mentions.has('769241485617922088', {ignoreDirect: false}))
+        message.reply("meow!");
     
     if (!message.content.startsWith(prefix)) return;
   
@@ -60,12 +80,12 @@ client.on("message", function(message) {
     const command = args.shift().toLowerCase();
 
     switch(command) {
-        case "ping":
-            const timeTaken = Date.now() - message.createdTimestamp;
-            message.reply(`Pong! This message had a latency of ${timeTaken}ms.`);
-            break;
         case "meow":
             message.reply("purrrrrrrrr");
+            break;
+        case "meow-ping":
+            const timeTaken = Date.now() - message.createdTimestamp;
+            message.reply(`Pong! This message had a latency of ${timeTaken}ms.`);
             break;
         case "meow-remove":
             // message.delete();
@@ -79,48 +99,45 @@ client.on("message", function(message) {
             //     .catch(console.error);
             // }
             break;
+        case "meow-schrodinger": //intentional fall-through
+        case "meow-quantum":
+            var randomnum = Math.random();
+            var threshhold = 0.5;
+            if (randomnum < threshhold)
+                message.channel.send("Your cat is dead! |0>, q("+randomnum+")");
+            else
+                message.channel.send("Your cat is alive! |1>, q("+randomnum+")");
+            break;
+
+        case "meow-commands":
+            message.channel.send(commandsList)
+            break;
+        case "meow-version":
+            message.reply(client.user.tag);
+            break;
+        case "meow-shutdown":
+            console.log(`Shutdown requested by ${message.author.tag}`);
+            if (message.author.id === botOwner) {
+                message.reply("Meow! Shutting down!").then(message =>{
+                    client.destroy();
+                    console.log("Meow! Shutting down!\n");
+                });
+            }
+            break;
         default:
             break;
     }
 });
 
 function checkRole(role, message) {
-    if(message.member.roles.cache.get(roles[role])) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-function processClientState(stateRequest, message) {
-    console.log(`${client.user.tag} ${stateRequest} requested by ${message.author.tag}.`);
-    message.delete();
-
-    // if(message.member.roles.cache.get(roles['Host'])) {
-    if (checkRole("Host", message)) {
-        console.log(`Authorized.\n`)
-
-
-        if (stateRequest=="shutdown") {
-            message.channel.send('Shutting down... (per user: <@'+message.author.id+'>)')
-            .then(m => { client.destroy(); } );
-        } else if (stateRequest=="relogin") {
-            message.channel.send('Restarting... (per user: <@'+message.author.id+'>)')
-            .then(m => { client.destroy(); } )
-            .then(m => { client.login(auth.token); } );
+    if (message.guild.id == guilds["thejasminedragon"]) {
+        if(message.member.roles.cache.get(roles[role])) {
+            return true;
+        } else {
+            return false;
         }
-
     }
-    else {
-        console.log(`Denied.`);
-    }
-}
-
-function removeNotCat(message) {
-    message.delete();
-    message.channel.send("cAt");
-    message.author.send("Meow!\nThanks for posting to the <#767240063301713951>! However, your last message was deleted because it doesn't fit within the channel rule:\n**Only the word 'cat' and media of cats are allowed.**\nThe residing _cat-god_ is tasked with keeping this rule.\nPlease repost to the <#767240063301713951> with the proper formatting! We want to see your kitties!\n");
-    console.log("That's not a kittie!");
+    else return false;
 }
 
 function checkForCats(message) {
@@ -131,6 +148,19 @@ function checkForCats(message) {
             || message.content.includes("http"))) {
                 removeNotCat(message);
     }
+}
+function removeNotCat(message) {
+    message.delete();
+    message.channel.send("cAt");
+    message.author.send("Meow!\nThanks for posting to the <#767240063301713951>! However, your last message was deleted because it doesn't fit within the channel rule:\n**Only the word 'cat' and media of cats are allowed.**\nThe residing _cat-god_ is tasked with keeping this rule.\nPlease repost to the <#767240063301713951> with the proper formatting! We want to see your kitties!\n");
+    console.log(`That's not a kittie! Informed ${message.author.tag}`);
+}
+
+async function delayedReply(message, response, maxTimeout = 2) {
+    t = Math.floor(Math.random() * Math.floor(maxTimeout));
+    setTimeout(() => { 
+        message.channel.send(response);
+    }, t*1000);
 }
 
 function parseMessageLink(link) {
