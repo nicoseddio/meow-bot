@@ -1,8 +1,5 @@
 // docs https://discord.js.org/#/
-// mgmt https://discord.com/developers/applications/769241485617922088/bot
 // guide https://www.digitalocean.com/community/tutorials/how-to-build-a-discord-bot-with-node-js
-// example https://github.com/sitepoint-editors/discord-bot-sitepoint/blob/master/index.js
-// hosting https://medium.com/@mason.spr/hosting-a-discord-js-bot-for-free-using-heroku-564c3da2d23f
 
 
 const Discord = require('discord.js');
@@ -27,8 +24,8 @@ var guilds = {
     "thejasminedragon": "726982067136757853",
 }
 var moderateCats = true;
-var botOwner = users["nikorokia"]; //default 'special-user'
-const commandsList = `
+const botOwner = users["nikorokia"]; //default 'special-user'
+const string_commandsList = `
 Meow!
 meow-bot supports the following commands:
     !meow
@@ -37,6 +34,14 @@ meow-bot supports the following commands:
     !meow-quantum
     !meow-version
 Enjoy your meow-bot!`
+const string_notACat = `
+Meow!
+Thanks for posting to the <#${channels['cat-cafe']}>!
+One of your messages was deleted because it doesn't fit the channel theme:
+**Only 'cat'** and media of **cats** may be posted.
+The residing _cat-god_ is tasked with nurturing proper cat worship.
+Please repost to the <#${channels['cat-cafe']}>!
+We want to see your kitties!`
 
 const client = new Discord.Client();
 //normal hosting config
@@ -45,7 +50,15 @@ client.login(auth.token);
 //client.login(process.env.BOT_TOKEN);//BOT_TOKEN is the Client Secret
 
 client.on('ready', () => {
-    console.log(`\nLogged in as ${client.user.tag}!`);
+    console.log();
+    log(`Logged in as ${client.user.tag}!`);
+
+    log(`Cleaning house in #cat-cafe...`);
+    try {
+        removeNotCatPins(client.channels.cache.get(channels['cat-cafe']));
+    } catch(error) {
+        log(error);
+    }
 });
 
 const prefix = "!";
@@ -57,14 +70,17 @@ client.on("message", function(message) {
         //moderation
         checkForCats(message);
         if (message.type === "PINS_ADD") {
+            log(`${message.author.tag} initiated a Pin Purge in #${message.channel.name}.`);
             message.channel.messages.fetchPinned()
-                .then(messages => message.channel.bulkDelete(messages));
+                .then(messages => {
+                    messages.forEach(m => removeNotCat(m));
+                });
             message.delete();
         }
         //engagement
         if (message.attachments.size > 0
             || message.content.includes("http"))
-                delayedReply(message, "cat", 900);
+                delayedReply(message, "cat", 300);
     }
 
     if (message.channel.id === channels['testing-channel']) {
@@ -108,19 +124,23 @@ client.on("message", function(message) {
             else
                 message.channel.send("Your cat is alive! |1>, q("+randomnum+")");
             break;
+        case "test":
+            if (message.author.id === botOwner) {
+            }
+            break;
 
         case "meow-commands":
-            message.channel.send(commandsList)
+            message.channel.send(string_commandsList)
             break;
         case "meow-version":
             message.reply(client.user.tag);
             break;
         case "meow-shutdown":
-            console.log(`Shutdown requested by ${message.author.tag}`);
+            log(`Shutdown requested by ${message.author.tag}`);
             if (message.author.id === botOwner) {
-                message.reply("Meow! Shutting down!").then(message =>{
+                message.reply("Shutting down!").then(message =>{
                     client.destroy();
-                    console.log("Meow! Shutting down!\n");
+                    log("Shutting down!\n");
                 });
             }
             break;
@@ -128,6 +148,15 @@ client.on("message", function(message) {
             break;
     }
 });
+
+async function log(string_s) {
+    const t = new Date();
+    const stamp = 
+         `[${String(t.getHours()).padStart(2, '0')}`
+        +`:${String(t.getMinutes()).padStart(2, '0')}`
+        +`:${String(t.getSeconds()).padStart(2, '0')}]`
+    console.log(`${stamp} Meow! ${string_s}`)
+}
 
 function checkRole(role, message) {
     if (message.guild.id == guilds["thejasminedragon"]) {
@@ -140,20 +169,34 @@ function checkRole(role, message) {
     else return false;
 }
 
-function checkForCats(message) {
+async function checkForCats(message) {
     if (moderateCats
         && !(message.content.toLowerCase() === "cat"
             || message.content.toLowerCase() === "cats"
             || message.content === ""
             || message.content.includes("http"))) {
-                removeNotCat(message);
+                try {
+                    removeNotCat(message);
+                } catch(error) {
+                    log(error);
+                }
     }
 }
-function removeNotCat(message) {
-    message.delete();
-    message.channel.send("cAt");
-    message.author.send("Meow!\nThanks for posting to the <#767240063301713951>! However, your last message was deleted because it doesn't fit within the channel rule:\n**Only the word 'cat' and media of cats are allowed.**\nThe residing _cat-god_ is tasked with keeping this rule.\nPlease repost to the <#767240063301713951> with the proper formatting! We want to see your kitties!\n");
-    console.log(`That's not a kittie! Informed ${message.author.tag}`);
+async function removeNotCatPins(channel) {
+    channel.messages.fetchPinned()
+        .then(messages => {
+            messages.forEach(m => removeNotCat(m));
+        });
+}
+async function removeNotCat(message) {
+    try {
+        message.delete();
+        message.channel.send("cAt");
+        message.author.send(string_notACat);
+        log(`That's not a kittie! Informed ${message.author.tag}...`);
+    } catch(error) {
+        log(error);
+    }
 }
 
 async function delayedReply(message, response, maxTimeout = 2) {
@@ -164,7 +207,7 @@ async function delayedReply(message, response, maxTimeout = 2) {
 }
 
 function parseMessageLink(link) {
-    console.log(`Attempting to parse link: ${link}`)
+    log(`Attempting to parse link: ${link}`)
     try{
         var ls = link.split('/');
         var ids = {
@@ -172,10 +215,10 @@ function parseMessageLink(link) {
             "channelID": ls[5],
             "messageID": ls[6]
         };
-        console.log(`Parse Successful: Guild ID: ${ids["guildID"]}, Channel ID: ${ids["channelID"]}, Message ID: ${ids["messageID"]}`);
+        log(`Parse Successful: Guild ID: ${ids["guildID"]}, Channel ID: ${ids["channelID"]}, Message ID: ${ids["messageID"]}`);
         return {"success": true, "ids": ids};
     } catch(error) {
-        console.log("Parse Failure, error:" + error);
+        log("Parse Failure, error:" + error);
         return {"success": false};
     }
 }
