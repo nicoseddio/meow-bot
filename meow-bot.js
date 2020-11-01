@@ -5,6 +5,7 @@
 const Discord = require('discord.js');
 const auth = require('./auth.json');
 
+
 let channels = {
     "welcome": "739292295236550676",
     "announcements": "726987017778495488",
@@ -26,6 +27,16 @@ let guilds = {
 }
 let moderateCats = true;
 const botOwner = users["nikorokia"]; //default 'special-user'
+const holidays = { //month is 0-indexed
+    "United States National Cat Day": {
+        "date": new Date(2005, 9, 29),
+        "message": ""
+    },
+    "Canada National Cat Day": {
+        "date": new Date(2005, 7, 8),
+        "message": ""
+    },
+}
 const string_commandsList = `
 Meow!
 meow-bot supports the following commands:
@@ -45,10 +56,7 @@ Please repost to the <#${channels['cat-cafe']}>!
 We want to see your kitties!`
 
 const client = new Discord.Client();
-//normal hosting config
 client.login(auth.token);
-//Heroku hosting config
-//client.login(process.env.BOT_TOKEN);//BOT_TOKEN is the Client Secret
 
 client.on('ready', () => {
     console.log();
@@ -60,6 +68,9 @@ client.on('ready', () => {
     } catch(error) {
         log(error);
     }
+
+    log(`Browsing the server...`);
+    browseServer();
 });
 
 const prefix = "!";
@@ -158,6 +169,30 @@ async function log(string_s) {
         +`:${String(t.getSeconds()).padStart(2, '0')}]`
     console.log(`${stamp} Meow! ${string_s}`)
 }
+function sleep(ms = 2000) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+} //example: await sleep(2000); //sleep for 2 seconds
+
+async function browseServer() {
+    let lastCheckTime = new Date();
+    while(true) {
+        respondToCats(client.channels.cache.get(channels['cat-cafe']));
+        await sleep(5*1000); // m * s * ms
+    }
+
+    async function respondToCats(channel) {
+        channel.messages.fetch({limit:10}).then(messages => {
+            // filters last 10 messages for meow-bot responses and images/links.
+            // If the last message was not meow-bot, meow-bot comments 'cat'.
+            if (    !(messages.filter( message =>
+                        message.content.includes('http')
+                        || message.attachments.size > 0
+                        || message.author.id == client.user.id
+                    ).first().author.id == client.user.id))
+                channel.send('cat');
+        });
+    }
+}
 
 function checkRole(role, message) {
     if (message.guild.id == guilds["thejasminedragon"]) {
@@ -171,16 +206,22 @@ function checkRole(role, message) {
 }
 
 async function checkForCats(message) {
-    if (moderateCats
-        && !(message.content.toLowerCase() === "cat"
-            || message.content.toLowerCase() === "cats"
-            || message.content === ""
-            || message.content.includes("http"))) {
-                try {
-                    removeNotCat(message);
-                } catch(error) {
-                    log(error);
+    const words = message.content.split(' ');
+    let notCats = false;
+    for (w in words) {
+        if ( !(     words[w].toLowerCase() === "cat"
+                ||  words[w].toLowerCase() === "cats"
+                ||  words[w] === ""
+                ||  words[w].includes("http") ) ) {
+                        notCats = true;
                 }
+    }
+    if (moderateCats && notCats) {
+        try {
+            removeNotCat(message);
+        } catch(error) {
+            log(error);
+        }
     }
 }
 async function removeNotCatPins(channel) {
@@ -192,7 +233,7 @@ async function removeNotCatPins(channel) {
 async function removeNotCat(message) {
     try {
         message.delete();
-        message.channel.send("cAt");
+        // message.channel.send("cAt");
         message.author.send(string_notACat);
         log(`That's not a kittie! Informed ${message.author.tag}...`);
     } catch(error) {
