@@ -177,7 +177,7 @@ async function browseServer() {
     let lastCheckTime = new Date();
     while(true) {
         respondToCats(client.channels.cache.get(channels['cat-cafe']));
-        await sleep(5*1000); // m * s * ms
+        await sleep(10*60*1000); // m * s * ms
     }
 
     async function respondToCats(channel) {
