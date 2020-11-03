@@ -89,10 +89,6 @@ client.on("message", function(message) {
                 });
             message.delete();
         }
-        //engagement
-        if (message.attachments.size > 0
-            || message.content.includes("http"))
-                delayedReply(message, "cat", 300);
     }
 
     if (message.channel.id === channels['testing-channel']) {
