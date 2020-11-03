@@ -20,7 +20,8 @@ let roles = {
     'cat-god': '767239576762318852',
 }
 let users = {
-    "nikorokia": "446468247756341250",
+    'nikorokia': '446468247756341250',
+    'meow-bot': '769241485617922088',
 }
 let guilds = {
     "thejasminedragon": "726982067136757853",
@@ -91,10 +92,7 @@ client.on("message", function(message) {
         }
     }
 
-    if (message.channel.id === channels['testing-channel']) {
-    }
-
-    if (message.mentions.has('769241485617922088', {ignoreDirect: false}))
+    if (message.mentions.has(users['meow-bot'], {ignoreDirect: false}))
         message.reply("meow!");
     
     if (!message.content.startsWith(prefix)) return;
@@ -143,33 +141,18 @@ client.on("message", function(message) {
         case "meow-version":
             message.reply(client.user.tag);
             break;
-        case "meow-shutdown":
-            log(`Shutdown requested by ${message.author.tag}`);
+        case "meow-system":
             if (message.author.id === botOwner) {
+                log(`Shutdown requested by ${message.author.tag}`);
                 message.reply("Shutting down!").then(message =>{
                     client.destroy();
                     log("Shutting down!\n");
                 });
-            }
+            } else message.reply("Voice key incorrect. Meow!");
             break;
         default:
             break;
     }
-});
-
-async function log(string_s) {
-    const t = new Date();
-    const stamp = 
-         `[${String(t.getHours()).padStart(2, '0')}`
-        +`:${String(t.getMinutes()).padStart(2, '0')}`
-        +`:${String(t.getSeconds()).padStart(2, '0')}]`
-    console.log(`${stamp} Meow! ${string_s}`)
-}
-function sleep(ms = 2000) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-} //example: await sleep(2000); //sleep for 2 seconds
-process.on('unhandledRejection', error => {
-	console.error('Unhandled promise rejection:', error);
 });
 
 async function browseServer() {
@@ -195,16 +178,7 @@ async function browseServer() {
     }
 }
 
-function checkRole(role, message) {
-    if (message.guild.id == guilds["thejasminedragon"]) {
-        if(message.member.roles.cache.get(roles[role])) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-    else return false;
-}
+
 
 async function checkForCats(message) {
     const words = message.content.split(' ');
@@ -242,13 +216,24 @@ async function removeNotCat(message) {
     }
 }
 
-async function delayedReply(message, response, maxTimeout = 2) {
-    t = Math.floor(Math.random() * Math.floor(maxTimeout));
-    setTimeout(() => { 
-        message.channel.send(response);
-    }, t*1000);
-}
 
+
+
+// #################################################
+// ############ Global Helper Functions ############
+// #################################################
+
+async function log(string_s) {
+    const t = new Date();
+    const stamp = 
+         `[${String(t.getHours()).padStart(2, '0')}`
+        +`:${String(t.getMinutes()).padStart(2, '0')}`
+        +`:${String(t.getSeconds()).padStart(2, '0')}]`
+    console.log(`${stamp} Meow! ${string_s}`)
+}
+function sleep(ms = 2000) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+} //example: await sleep(2000); //sleep for 2 seconds
 function parseMessageLink(link) {
     log(`Attempting to parse link: ${link}`)
     try{
@@ -267,4 +252,14 @@ function parseMessageLink(link) {
         log("Parse Failure, error:" + error);
         return {"success": false};
     }
+}
+function checkRole(role, message) {
+    if (message.guild.id == guilds["thejasminedragon"]) {
+        if(message.member.roles.cache.get(roles[role])) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    else return false;
 }
