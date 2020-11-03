@@ -2,9 +2,23 @@
 // guide https://www.digitalocean.com/community/tutorials/how-to-build-a-discord-bot-with-node-js
 
 
+
+
+
+// #################################################
+// #################### Imports ####################
+// #################################################
+
 const Discord = require('discord.js');
 const auth = require('./auth.json');
 
+
+
+
+
+// #################################################
+// ################ Initializations ################
+// #################################################
 
 let channels = {
     "welcome": "739292295236550676",
@@ -55,6 +69,15 @@ One of your messages was deleted because it doesn't fit the channel theme:
 The residing _cat-god_ is tasked with nurturing proper cat worship.
 Please repost to the <#${channels['cat-cafe']}>!
 We want to see your kitties!`
+const prefix = "!";
+
+
+
+
+
+// #################################################
+// ################ System Startup #################
+// #################################################
 
 const client = new Discord.Client();
 client.login(auth.token);
@@ -74,7 +97,14 @@ client.on('ready', () => {
     browseServer();
 });
 
-const prefix = "!";
+
+
+
+
+// #################################################
+// ############### Message Handling ################
+// #################################################
+
 client.on("message", function(message) {
     if (message.author.bot) return;
 
@@ -155,6 +185,14 @@ client.on("message", function(message) {
     }
 });
 
+
+
+
+
+// #################################################
+// ############# Passive Functionality #############
+// #################################################
+
 async function browseServer() {
     let lastCheckTime = new Date();
     while(true) {
@@ -179,6 +217,12 @@ async function browseServer() {
 }
 
 
+
+
+
+// #################################################
+// ########### Domain-Specific Functions ###########
+// #################################################
 
 async function checkForCats(message) {
     const words = message.content.split(' ');
@@ -215,6 +259,7 @@ async function removeNotCat(message) {
         log(error);
     }
 }
+
 
 
 
