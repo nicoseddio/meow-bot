@@ -168,6 +168,9 @@ async function log(string_s) {
 function sleep(ms = 2000) {
     return new Promise(resolve => setTimeout(resolve, ms));
 } //example: await sleep(2000); //sleep for 2 seconds
+process.on('unhandledRejection', error => {
+	console.error('Unhandled promise rejection:', error);
+});
 
 async function browseServer() {
     let lastCheckTime = new Date();
@@ -184,8 +187,10 @@ async function browseServer() {
                         message.content.includes('http')
                         || message.attachments.size > 0
                         || message.author.id == client.user.id
-                    ).first().author.id == client.user.id))
+                    ).first().author.id == client.user.id)) {
                 channel.send('cat');
+                log("That's a kitty!");
+            }
         });
     }
 }
