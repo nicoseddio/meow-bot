@@ -11,6 +11,7 @@
 
 const Discord = require('discord.js');
 const auth = require('./auth.json');
+const fetch = require("node-fetch");
 
 
 
@@ -105,7 +106,7 @@ client.on('ready', () => {
 // ############### Message Handling ################
 // #################################################
 
-client.on("message", function(message) {
+client.on("message", async function(message) {
     if (message.author.bot) return;
 
     // cat-cafe moderation
@@ -119,6 +120,11 @@ client.on("message", function(message) {
                     messages.forEach(m => removeNotCat(m));
                 });
             message.delete();
+        }
+        if (message.content === "CAT") {
+            const { file } = await fetch('https://aws.random.cat/meow').then(response => response.json());
+            message.channel.send(file);
+            message.channel.send("cat");
         }
     }
 
@@ -198,6 +204,7 @@ async function browseServer() {
     while(true) {
         respondToCats(client.channels.cache.get(channels['cat-cafe']));
         await sleep(10*60*1000); // m * s * ms
+        lastCheckTime = new Date();
     }
 
     async function respondToCats(channel) {
