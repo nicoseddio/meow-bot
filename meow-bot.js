@@ -122,6 +122,7 @@ client.on("message", async function(message) {
             message.delete();
         }
         if (message.content === "CAT") {
+            log(`${message.author.tag} wants a cat!`)
             postCat(message.channel);
         }
     }
@@ -230,6 +231,7 @@ async function browseServer() {
 // #################################################
 
 async function postCat(channel) {
+    log('Posting a cat!');
     const { file } = await fetch('https://aws.random.cat/meow').then(response => response.json());
     channel.send(file);
     channel.send("cat");
