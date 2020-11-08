@@ -122,9 +122,7 @@ client.on("message", async function(message) {
             message.delete();
         }
         if (message.content === "CAT") {
-            const { file } = await fetch('https://aws.random.cat/meow').then(response => response.json());
-            message.channel.send(file);
-            message.channel.send("cat");
+            postCat(message.channel);
         }
     }
 
@@ -231,6 +229,11 @@ async function browseServer() {
 // ########### Domain-Specific Functions ###########
 // #################################################
 
+async function postCat(channel) {
+    const { file } = await fetch('https://aws.random.cat/meow').then(response => response.json());
+    channel.send(file);
+    channel.send("cat");
+}
 async function checkForCats(message) {
     const words = message.content.split(' ');
     let notCats = false;
