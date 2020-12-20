@@ -103,7 +103,7 @@ client.on('ready', () => {
 
 
 // #################################################
-// ############### Message Handling ################
+// ################ Message Events #################
 // #################################################
 
 client.on("message", async function(message) {
@@ -140,24 +140,11 @@ client.on("message", async function(message) {
         case "meow":
             message.reply("purrrrrrrrr");
             break;
-        case "meow-ping":
+        case "ping":
             const timeTaken = Date.now() - message.createdTimestamp;
             message.reply(`Pong! This message had a latency of ${timeTaken}ms.`);
             break;
-        case "meow-remove":
-            // message.delete();
-            // if (checkRole("cat-god", message)) {
-            //     let m = 1;
-            //     if (args.length > 0) m = args[0];
-            //     let ms = message.channel.messages.fetch({limit:m}).then(messages => {
-            //         let lastmessage = messages.last();
-            //         message.channel.send(lastmessage.content);
-            //     })
-            //     .catch(console.error);
-            // }
-            break;
-        case "meow-schrodinger": //intentional fall-through
-        case "meow-quantum":
+        case "quantum":
             const randomnum = Math.random();
             const threshhold = 0.5;
             if (randomnum < threshhold)
@@ -170,13 +157,13 @@ client.on("message", async function(message) {
             }
             break;
 
-        case "meow-commands":
+        case "commands":
             message.channel.send(string_commandsList)
             break;
-        case "meow-version":
+        case "version":
             message.reply(client.user.tag);
             break;
-        case "meow-system":
+        case "shutdown":
             if (message.author.id === botOwner) {
                 log(`Shutdown requested by ${message.author.tag}`);
                 message.reply("Shutting down!").then(message =>{
@@ -190,6 +177,36 @@ client.on("message", async function(message) {
     }
 });
 
+async function handleBangCommand(c) {
+    switch(c) {
+        case "quantum":
+            message.channel.send(getQuantumMessage());
+            break;
+    }
+}
+
+function getQuantumMessage() {
+    const randomnum = Math.random();
+    const threshhold = 0.5;
+    if (randomnum < threshhold)
+       return("Your cat is dead! |0>, q("+randomnum+")");
+    else
+        return("Your cat is alive! |1>, q("+randomnum+")");
+}
+
+
+
+
+// #################################################
+// ################ Deletion Events ################
+// #################################################
+
+client.on("messageDelete", async function(deletedMessage) {
+    if (deletedMessage.channel.id === channels['cat-cafe']) {
+        deletedMessage.author.send(string_notACat);
+        log(`That wasn't a kittie! Informed ${deletedMessage.author.tag}...`);
+    }
+});
 
 
 
