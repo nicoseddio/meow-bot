@@ -27,7 +27,7 @@ let channels = {
     "cat-cafe": "767240063301713951",
     "commonroom": "726982067941802108",
     "testing-channel": "769727793352802314",
-    "bot-spam": "769696060737847348",
+    "meow-bot": "769696060737847348",
 }
 let roles = {
     'Host': '726983794002886731',
@@ -87,12 +87,12 @@ client.on('ready', () => {
     console.log();
     log(`Logged in as ${client.user.tag}!`);
 
-    log(`Cleaning house in #cat-cafe...`);
-    try {
-        removeNotCatPins(client.channels.cache.get(channels['cat-cafe']));
-    } catch(error) {
-        log(error);
-    }
+    // log(`Cleaning house in #cat-cafe...`);
+    // try {
+    //     removeNotCatPins(client.channels.cache.get(channels['cat-cafe']));
+    // } catch(error) {
+    //     log(error);
+    // }
 
     log(`Browsing the server...`);
     browseServer();
@@ -113,14 +113,14 @@ client.on("message", async function(message) {
     if (message.channel.id === channels['cat-cafe']) {
         //moderation
         checkForCats(message);
-        if (message.type === "PINS_ADD") {
-            log(`${message.author.tag} initiated a Pin Purge in #${message.channel.name}.`);
-            message.channel.messages.fetchPinned()
-                .then(messages => {
-                    messages.forEach(m => removeNotCat(m));
-                });
-            message.delete();
-        }
+        // if (message.type === "PINS_ADD") {
+        //     log(`${message.author.tag} initiated a Pin Purge in #${message.channel.name}.`);
+        //     message.channel.messages.fetchPinned()
+        //         .then(messages => {
+        //             messages.forEach(m => removeNotCat(m));
+        //         });
+        //     message.delete();
+        // }
         if (message.content === "CAT") {
             log(`${message.author.tag} wants a cat!`)
             postCat(message.channel);
@@ -130,10 +130,26 @@ client.on("message", async function(message) {
     if (message.mentions.has(users['meow-bot'], {ignoreDirect: false}))
         message.reply("meow!");
     
-    if (!message.content.startsWith(prefix)) return;
+    // if (!message.content.startsWith(prefix)) return;
   
-    const commandBody = message.content.slice(prefix.length);
-    const args = commandBody.split(' ');
+    // const commandBody = message.content.slice(prefix.length);
+    // const args = commandBody.split(' ');
+    // const command = args.shift().toLowerCase();
+
+    const args = message.content.split(' ');
+
+    // bang proc
+    if (args[0].startsWith(prefix)) {
+        const slicedargs = args[0].slice(prefix.length);
+        handleBangCommand(message, slicedargs);
+        return;
+    }
+
+    // [19:22:45] Meow! <@!769241485617922088> Meow
+    // [19:22:55] Meow! <@!446468247756341250> Niko
+    
+    if (message.channel.id === channels['meow-bot']) {
+
     const command = args.shift().toLowerCase();
 
     switch(command) {
@@ -145,18 +161,8 @@ client.on("message", async function(message) {
             message.reply(`Pong! This message had a latency of ${timeTaken}ms.`);
             break;
         case "quantum":
-            const randomnum = Math.random();
-            const threshhold = 0.5;
-            if (randomnum < threshhold)
-                message.channel.send("Your cat is dead! |0>, q("+randomnum+")");
-            else
-                message.channel.send("Your cat is alive! |1>, q("+randomnum+")");
+            message.channel.send(getQuantumMessage());
             break;
-        case "test":
-            if (message.author.id === botOwner) {
-            }
-            break;
-
         case "commands":
             message.channel.send(string_commandsList)
             break;
@@ -175,10 +181,12 @@ client.on("message", async function(message) {
         default:
             break;
     }
+    }
 });
 
-async function handleBangCommand(c) {
-    switch(c) {
+
+async function handleBangCommand(message, cs) {
+    switch(cs) {
         case "quantum":
             message.channel.send(getQuantumMessage());
             break;
@@ -272,12 +280,12 @@ async function checkForCats(message) {
         }
     }
 }
-async function removeNotCatPins(channel) {
-    channel.messages.fetchPinned()
-        .then(messages => {
-            messages.forEach(m => removeNotCat(m));
-        });
-}
+// async function removeNotCatPins(channel) {
+//     channel.messages.fetchPinned()
+//         .then(messages => {
+//             messages.forEach(m => removeNotCat(m));
+//         });
+// }
 async function removeNotCat(message) {
     try {
         message.delete();
