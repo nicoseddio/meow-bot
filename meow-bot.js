@@ -12,6 +12,7 @@
 const Discord = require('discord.js');
 const auth = require('./auth.json');
 const fetch = require("node-fetch");
+const { exec } = require("child_process");
 
 
 
@@ -21,6 +22,7 @@ const fetch = require("node-fetch");
 // ################ Initializations ################
 // #################################################
 
+const clientVersion = 1.000
 let channels = {
     "welcome": "739292295236550676",
     "announcements": "726987017778495488",
@@ -56,11 +58,10 @@ const holidays = { //month is 0-indexed
 const string_commandsList = `
 Meow!
 meow-bot supports the following commands:
-    !meow
-    !meow-commands
-    !meow-ping
-    !meow-quantum
-    !meow-version
+- \`meow\`
+- \`commands\`
+- \`ping\`
+- \`quantum\`
 Enjoy your meow-bot!`
 const string_notACat = `
 Meow!
@@ -107,90 +108,138 @@ client.on('ready', () => {
 // #################################################
 
 client.on("message", async function(message) {
-    if (message.author.bot) return;
+    let replied = false;
+
+    // don't operate on own commands
+    if (message.author.id === client.user.id) return;
 
     // cat-cafe moderation
     if (message.channel.id === channels['cat-cafe']) {
-        //moderation
         checkForCats(message);
-        // if (message.type === "PINS_ADD") {
-        //     log(`${message.author.tag} initiated a Pin Purge in #${message.channel.name}.`);
-        //     message.channel.messages.fetchPinned()
-        //         .then(messages => {
-        //             messages.forEach(m => removeNotCat(m));
-        //         });
-        //     message.delete();
-        // }
+
         if (message.content === "CAT") {
             log(`${message.author.tag} wants a cat!`)
             postCat(message.channel);
+            replied = true;
         }
     }
 
-    if (message.mentions.has(users['meow-bot'], {ignoreDirect: false}))
-        message.reply("meow!");
-    
-    // if (!message.content.startsWith(prefix)) return;
-  
-    // const commandBody = message.content.slice(prefix.length);
-    // const args = commandBody.split(' ');
-    // const command = args.shift().toLowerCase();
-
+    // message content processing
     const args = message.content.split(' ');
+    const command = args.shift().toLowerCase();
 
-    // bang proc
-    if (args[0].startsWith(prefix)) {
-        const slicedargs = args[0].slice(prefix.length);
-        handleBangCommand(message, slicedargs);
-        return;
+      // bang processing
+    if (command.startsWith(prefix)) {
+        const strippedcommand = command.slice(prefix.length);
+        replied = handleBangCommand(strippedcommand, args, message);
+    } // meow-bot DM processing
+    else if (message.channel.type === 'dm') {
+        replied = handleCommand(command, args, message);
+    } // meow-bot terminal processing
+    else if (message.channel.id === channels['meow-bot']) {
+        if (!(command.startsWith('<@!'))) //ignore users talking to each other
+            replied = handleCommand(command, args, message);
+    } // meow-bot mention processing
+    else if (command === "<@!769241485617922088>") {
+        const subcommand = args.shift().toLowerCase();
+        replied = handleCommand(subcommand, args, message);
     }
-
+    
     // [19:22:45] Meow! <@!769241485617922088> Meow
     // [19:22:55] Meow! <@!446468247756341250> Niko
     
-    if (message.channel.id === channels['meow-bot']) {
+    // message properties processing
+    if (message.mentions.has(users['meow-bot'], {ignoreDirect: false}) && !replied) {
+        message.reply("meow!");
+        replied = true;
+    }
 
-    const command = args.shift().toLowerCase();
+});
 
+
+function handleBangCommand(command, args, message) {
+    let replied = false;
+    switch(command) {
+        case "quantum":
+            message.channel.send(getQuantumMessage());
+            replied = true;
+            break;
+    }
+    return replied;
+}
+function handleCommand(command, args, message) {
+    let replied = false;
     switch(command) {
         case "meow":
             message.reply("purrrrrrrrr");
+            replied = true;
+            break;
+        case "cat":
+            log(`${message.author.tag} wants a cat!`)
+            postCat(message.channel);
+            replied = true;
             break;
         case "ping":
             const timeTaken = Date.now() - message.createdTimestamp;
             message.reply(`Pong! This message had a latency of ${timeTaken}ms.`);
+            replied = true;
             break;
         case "quantum":
             message.channel.send(getQuantumMessage());
+            replied = true;
             break;
         case "commands":
-            message.channel.send(string_commandsList)
+            message.channel.send(string_commandsList);
+            replied = true;
             break;
-        case "version":
-            message.reply(client.user.tag);
-            break;
-        case "shutdown":
+        case "system":
             if (message.author.id === botOwner) {
-                log(`Shutdown requested by ${message.author.tag}`);
-                message.reply("Shutting down!").then(message =>{
-                    client.destroy();
-                    log("Shutting down!\n");
-                });
-            } else message.reply("Voice key incorrect. Meow!");
+                log(`System access requested by ${message.author.tag}`);
+                if (args.length > 0) {
+                    const subcommand = args.shift().toLowerCase();
+                    switch(subcommand) {
+                        case "shutdown":
+                            log(`    They want to shut me down!`);
+                            message.reply("Shutting down!").then(message =>{
+                                client.destroy();
+                                log("Shutting down!\n");
+                            });
+                            break;
+                        case "update":
+                            log(`    They want to update me!`);
+                            message.reply("Pulling updates!");
+                            exec("git pull", (error, stdout, stderr) => {
+                                if (error) {
+                                    log(`error: ${error.message}`);
+                                    return;
+                                }
+                                if (stderr) {
+                                    log(`stderr: ${stderr}`);
+                                    return;
+                                }
+                                log(`stdout: ${stdout}`);
+                            });
+                            break;
+                        case "version":
+                            message.reply(`${client.user.tag} v${clientVersion}`);
+                            break;
+                        case "status":
+                            const statuscommand = args.shift().toLowerCase();
+                            handleStatusChange(command,args,message);
+                            break;
+                    }
+                }
+                else message.reply('System Commands:\n- `shutdown`\n- `update`\n- `version`\n- `status [set, clear]`');
+            }
+            else message.reply("Voice key incorrect. Meow!");
+            replied = true;
             break;
         default:
+            message.reply(`your command was not recognized!`);
+            replied = true;
             break;
     }
-    }
-});
-
-
-async function handleBangCommand(message, cs) {
-    switch(cs) {
-        case "quantum":
-            message.channel.send(getQuantumMessage());
-            break;
-    }
+    return replied;
 }
 
 function getQuantumMessage() {
@@ -200,6 +249,10 @@ function getQuantumMessage() {
        return("Your cat is dead! |0>, q("+randomnum+")");
     else
         return("Your cat is alive! |1>, q("+randomnum+")");
+}
+
+function handleStatusChange(command, args, message) {
+    return;
 }
 
 
