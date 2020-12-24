@@ -12,7 +12,8 @@
 const Discord = require('discord.js');
 const auth = require('./auth.json');
 const fetch = require("node-fetch");
-const { exec } = require("child_process");
+const { exec } = require('child_process');
+const fs = require('fs');
 
 
 
@@ -23,6 +24,7 @@ const { exec } = require("child_process");
 // #################################################
 
 const clientVersion = 1.000
+var logStream = fs.createWriteStream("logfile.txt", {flags:'a'})
 let channels = {
     "welcome": "739292295236550676",
     "announcements": "726987017778495488",
@@ -218,6 +220,7 @@ function handleCommand(command, args, message) {
                                     return;
                                 }
                                 log(`stdout: ${stdout}`);
+                                message.reply(stdout);
                             });
                             break;
                         case "version":
@@ -236,6 +239,7 @@ function handleCommand(command, args, message) {
             break;
         default:
             message.reply(`your command was not recognized!`);
+            log(`Invalid command passed by ${message.author.tag}: ${message.content}.`);
             replied = true;
             break;
     }
@@ -364,7 +368,9 @@ async function log(string_s) {
          `[${String(t.getHours()).padStart(2, '0')}`
         +`:${String(t.getMinutes()).padStart(2, '0')}`
         +`:${String(t.getSeconds()).padStart(2, '0')}]`
-    console.log(`${stamp} Meow! ${string_s}`)
+    let logMessage = `${stamp} Meow! ${string_s}`;
+    logStream.write(logMessage);
+    console.log(logMessage);
 }
 function sleep(ms = 2000) {
     return new Promise(resolve => setTimeout(resolve, ms));
