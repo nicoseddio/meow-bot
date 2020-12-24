@@ -365,11 +365,14 @@ async function removeNotCat(message) {
 async function log(string_s) {
     const t = new Date();
     const stamp = 
-         `[${String(t.getHours()).padStart(2, '0')}`
+         `[${String(t.getFullYear()).substr(-2)}`
+        + `${String(t.getMonth()+1).padStart(2, '0')}`
+        + `${String(t.getDate()   ).padStart(2, '0')}`
+        +` ${String(t.getHours()  ).padStart(2, '0')}`
         +`:${String(t.getMinutes()).padStart(2, '0')}`
         +`:${String(t.getSeconds()).padStart(2, '0')}]`
     let logMessage = `${stamp} Meow! ${string_s}`;
-    logStream.write(logMessage);
+    logStream.write(logMessage+'\n');
     console.log(logMessage);
 }
 function sleep(ms = 2000) {
