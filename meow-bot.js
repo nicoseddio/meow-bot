@@ -15,16 +15,12 @@
 // #################################################
 
 const Discord = require('discord.js');
-const auth = require('./auth.json');
 const fetch = require("node-fetch");
 const { exec } = require('child_process');
 const fs = require('fs');
-
-// try { require('./auth.json'); }
-// catch (e) {
-//     handleWriteToFile(defaultAuth,`./auth.json`);
-//     log(`No auth.json file found. Fill out the template created and rerun.`);
-// }
+const auth = require('./auth.json');
+const configFileName = './config.json';
+const config = require(configFileName);
 
 
 
@@ -35,55 +31,6 @@ const fs = require('fs');
 
 const clientVersion = 1.000
 var logStream = fs.createWriteStream("logfile.txt", {flags:'a'})
-let channels = {
-    welcome: "739292295236550676",
-    announcements: "726987017778495488",
-    catcafe: "767240063301713951",
-    commonroom: "726982067941802108",
-    testingchannel: "769727793352802314",
-    meowbot: "769696060737847348",
-}
-let roles = {
-    'Host': '726983794002886731',
-    'dev': '769661278884724787',
-    'cat-god': '767239576762318852',
-}
-let users = {
-    nikorokia: '446468247756341250',
-    meowbot: '769241485617922088',
-}
-let guilds = {
-    "thejasminedragon": "726982067136757853",
-}
-let moderateCats = true;
-const botOwner = users.nikorokia; //default 'special-user'
-const holidays = { //month is 0-indexed
-    "United States National Cat Day": {
-        "date": new Date(2005, 10-1, 29),
-        "message": ""
-    },
-    "Canada National Cat Day": {
-        "date": new Date(2005, 8-1, 8),
-        "message": ""
-    },
-}
-const string_commandsList = `
-Meow!
-meow-bot supports the following commands:
-- \`meow\`
-- \`commands\`
-- \`ping\`
-- \`quantum\`
-Enjoy your meow-bot!`
-const string_notACat = `
-Meow!
-Thanks for posting to the <#${channels.catcafe}>!
-One of your messages was deleted because it doesn't fit the channel theme:
-**Only 'cat'** and media of **cats** may be posted.
-The residing _cat-god_ is tasked with nurturing proper cat worship.
-Please repost to the <#${channels.catcafe}>!
-We want to see your kitties!`
-const prefix = "!";
 
 
 
@@ -119,7 +66,7 @@ client.on("message", async function(message) {
     if (message.author.id === client.user.id) return;
 
     // cat-cafe moderation
-    if (message.channel.id === channels.catcafe) {
+    if (message.channel.id === config.channels.catcafe) {
         handleNoCatsCheck(message);
 
         if (message.content === "CAT") {
@@ -134,24 +81,22 @@ client.on("message", async function(message) {
     const command = args.shift().toLowerCase();
 
       // bang processing
-    if (command.startsWith(prefix)) {
-        const strippedcommand = command.slice(prefix.length);
+    if (command.startsWith(config.prefixes.games)) {
+        const strippedcommand = command.slice(config.prefixes.games.length);
         replied = handleBangCommand(strippedcommand, args, message);
     } // meow-bot DM processing
     else if (message.channel.type === 'dm') {
         replied = handleCommand(command, args, message);
     } // meow-bot terminal processing
-    else if (message.channel.id === channels.meowbot) {
+    else if (message.channel.id === config.channels.meowbot) {
         if (command === "<@!769241485617922088>" || !(command.startsWith('<@!')) ) //ignore users talking to each other
             replied = handleCommand(command, args, message);
-    } // meow-bot mention processing
+    } // meow-bot opening mention processing
     else if (command === "<@!769241485617922088>") {
         replied = handleCommand(command, args, message);
-    }
-    
-    // message properties processing
-    if (message.mentions.has(users.meowbot, {ignoreDirect: false})
-        && message.channel.id != channels.catcafe) {
+    } // message included mention processing
+    else if (message.mentions.has(client.user.id, {ignoreDirect: false})
+        && message.channel.id != config.channels.catcafe) {
             message.reply("meow!");
             replied = true;
     }
@@ -176,8 +121,9 @@ function handleCommand(command, args, message) {
     let replied = false;
     switch(c) {
         case "test":
-            message.reply(`${client.user.avatar}`);
-            replied = true;
+            message.reply(checkMadeOfWords('catcatcat',['cat','cats','http']));
+            message.reply(checkMadeOfWords('catdogcat',['cat','cats','http']));
+            message.reply(checkMadeOfWords('dogdogdog',['cat','cats','http']));
             break;
         case "praise":
         case "meow":
@@ -198,12 +144,15 @@ function handleCommand(command, args, message) {
             message.channel.send(getQuantumMessage());
             replied = true;
             break;
+        case "help":
         case "commands":
-            message.channel.send(string_commandsList);
+            message.channel.send(config.messages.commandsList);
+            if (config.sudoers.includes(message.author.id))
+                message.reply(config.messages.commandsListSudo);
             replied = true;
             break;
-        case "system":
-            if (message.author.id === botOwner) {
+        case "sudo":
+            if (config.sudoers.includes(message.author.id)) {
                 handleSystemCommand(command, args, message);   
             }
             else message.reply("Voice key incorrect. Meow!");
@@ -267,16 +216,13 @@ function handleSystemCommand(command, args, message) {
                     handleStatusChange(statuscommand,args);
                 }
                 break;
+            case "saveconfig":
+                message.reply("Saving config file!");
+                handleWriteToFile(config, configFileName);
+                break;
         }
     }
-    else message.reply(
-        'System Commands:\n'+
-        '- `shutdown`\n'+
-        '- `update`\n'+
-        '- `version`\n'+
-        '- `status [set [TYPE] [msg], clear]`\n'+
-        '  `TYPEs: PLAYING/STREAMING/LISTENING/WATCHING/COMPETING`'
-    );
+    else message.reply(config.messages.commandsListSudo);
 }
 function handleStatusChange(command, args) {
     switch(command) {
@@ -299,7 +245,7 @@ function handleStatusChange(command, args) {
 }
 function handleWriteToFile(dictionary, file) {
     
-    let data = JSON.stringify(dictionary);
+    let data = JSON.stringify(dictionary, null, '    ');
     fs.writeFile(file, data, function (err) {
         if (err) {
             log(`File writing error: ${err.message}`);
@@ -329,8 +275,10 @@ function handleReadFromFile(file, dictionary) {
 // #################################################
 
 client.on("messageDelete", async function(deletedMessage) {
-    if (deletedMessage.channel.id === channels.catcafe) {
-        deletedMessage.author.send(string_notACat);
+    if (deletedMessage.channel.id === config.channels.catcafe) {
+        deletedMessage.author.send(
+            config.messages.notACat +
+            `\n\n*Deleted Message:*\n\`${deletedMessage.content}\``);
         log(`Message deleted in the cat-cafe. Informed ${deletedMessage.author.tag}.`);
     }
 });
@@ -345,7 +293,7 @@ client.on("messageDelete", async function(deletedMessage) {
 async function handleBrowseServer() {
     let lastCheckTime = new Date();
     while(true) {
-        handleRespondToCats(client.channels.cache.get(channels.catcafe));
+        handleRespondToCats(client.channels.cache.get(config.channels.catcafe));
         await sleep(10*60*1000); // m * s * ms
         lastCheckTime = new Date();
     }
@@ -384,31 +332,51 @@ async function handleNoCatsCheck(message) {
     const words = message.content.split(' ');
     let notCats = false;
     for (w in words) {
-        if ( !(     words[w].toLowerCase() === "cat"
-                ||  words[w].toLowerCase() === "cats"
+        if ( !( checkMadeOfWords(words[w].toLowerCase(),['cat','cats'])
+                //     words[w].toLowerCase() === "cat"
+                // ||  words[w].toLowerCase() === "cats"
                 ||  words[w] === ""
-                ||  words[w].includes("http") ) ) {
-                        notCats = true;
-                }
-    }
-    if (moderateCats && notCats) {
-        try {
-            handleRemoveNotCat(message);
-        } catch(error) {
-            log(error);
+                ||  words[w].includes("http") 
+                // ||  words[w].startsWith("http")
+            ) ) {
+                notCats = true;
         }
     }
-}
-async function handleRemoveNotCat(message) {
-    try {
+    if (config.global.moderateCats && notCats) {
+        sleep(500);
         message.delete();
-        // message.author.send(string_notACat);
         // delete notification now handled by client.on("messageDelete")
         //     to allow for cat-god moderation
         log(`That's not a kittie!`);
-    } catch(error) {
-        log(error);
     }
+}
+/**
+ * Check whether a word is made of multiples of another word.
+ * @param {string} word - Primary word to check against.
+ * @param {string[]} words - Array of words to check individually in primary word.
+ */
+function checkMadeOfWords(word, words) {
+    let wordsCheckList = [];
+    for (w in words) {
+        let work = word;
+        let okay = true;
+        // while viable w-length sections left
+        while (work.length >= words[w].length && okay) {
+            // check current w-length section
+            if (work.startsWith(words[w])) {
+                // move to next w-length section
+                work = work.substring(words[w].length);
+            }
+            else {
+                // terminate current word
+                okay = false;
+            }
+        }
+        // document result of check
+        wordsCheckList.push(okay);
+    }
+    // true if word made of any one word
+    return wordsCheckList.includes(true);
 }
 
 
@@ -454,21 +422,13 @@ function parseMessageLink(link) {
         return {"success": false};
     }
 }
-function checkRole(role, message) {
-    if (message.guild.id == guilds["thejasminedragon"]) {
-        if(message.member.roles.cache.get(roles[role])) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-    else return false;
-}
-
-const defaultConfig = {
-
-}
-
-const defaultAuth = {
-    token: "TOKEN_PLACED_HERE",
-}
+// function checkRole(role, message) {
+//     if (message.guild.id == config.guilds.thejasminedragon) {
+//         if(message.member.roles.cache.get(config.roles[role])) {
+//             return true;
+//         } else {
+//             return false;
+//         }
+//     }
+//     else return false;
+// }
