@@ -22,23 +22,11 @@ const auth = require('./auth.json');
 const configFileName = './config.json';
 const config = require(configFileName);
 
-
-
-
-// #################################################
-// ################ Initializations ################
-// #################################################
-
-const clientVersion = 1.000
-var logStream = fs.createWriteStream("logfile.txt", {flags:'a'})
-
-
-
-
-
 // #################################################
 // ################ System Startup #################
 // #################################################
+
+var logStream = fs.createWriteStream("logfile.txt", {flags:'a'})
 
 const client = new Discord.Client();
 client.login(auth.token);
@@ -55,12 +43,16 @@ client.on('ready', () => {
 
 
 
+
+
+
+
+
 // #################################################
 // ################ Message Events #################
 // #################################################
 
 client.on("message", async function(message) {
-    let replied = false;
 
     // don't operate on own commands
     if (message.author.id === client.user.id) return;
@@ -72,7 +64,6 @@ client.on("message", async function(message) {
         if (message.content === "CAT") {
             log(`${message.author.tag} wants a cat!`)
             handleCatPostRequest(message.channel);
-            replied = true;
         }
     }
 
@@ -83,88 +74,94 @@ client.on("message", async function(message) {
       // bang processing
     if (command.startsWith(config.prefixes.games)) {
         const strippedcommand = command.slice(config.prefixes.games.length);
-        replied = handleBangCommand(strippedcommand, args, message);
+        handleBangCommand(strippedcommand, args, message);
     } // meow-bot DM processing
     else if (message.channel.type === 'dm') {
-        replied = handleCommand(command, args, message);
+        handleCommand(command, args, message);
     } // meow-bot terminal processing
     else if (message.channel.id === config.channels.meowbot) {
         if (command === "<@!769241485617922088>" || !(command.startsWith('<@!')) ) //ignore users talking to each other
-            replied = handleCommand(command, args, message);
+            handleCommand(command, args, message);
     } // meow-bot opening mention processing
     else if (command === "<@!769241485617922088>") {
-        replied = handleCommand(command, args, message);
+        handleCommand(command, args, message);
     } // message included mention processing
     else if (message.mentions.has(client.user.id, {ignoreDirect: false})
         && message.channel.id != config.channels.catcafe) {
             message.reply("meow!");
-            replied = true;
     }
 
 });
 
+client.on("messageDelete", async function(deletedMessage) {
+    if (deletedMessage.channel.id === config.channels.catcafe) {
+        deletedMessage.author.send(
+            config.messages.notACat +
+            `\n\n*Deleted Message:*\n\`${deletedMessage.content}\``);
+        log(`Message deleted in the cat-cafe. Informed ${deletedMessage.author.tag}.`);
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+// #################################################
+// ############### Utility Functions ###############
+// #################################################
 
 function handleBangCommand(command, args, message) {
-    let replied = false;
     switch(command) {
         case "quantum":
             message.channel.send(getQuantumMessage());
-            replied = true;
             break;
     }
-    return replied;
 }
 function handleCommand(command, args, message) {
     let c = command;
     if (c === "<@!769241485617922088>")
         c = args.shift().toLowerCase();
-    let replied = false;
     switch(c) {
         case "test":
-            message.reply(checkMadeOfWords('catcatcat',['cat','cats','http']));
-            message.reply(checkMadeOfWords('catdogcat',['cat','cats','http']));
-            message.reply(checkMadeOfWords('dogdogdog',['cat','cats','http']));
             break;
         case "praise":
         case "meow":
             message.reply("purrrrrrrrr");
-            replied = true;
             break;
         case "cat":
             log(`${message.author.tag} wants a cat!`)
             handleCatPostRequest(message.channel);
-            replied = true;
             break;
         case "ping":
             const timeTaken = Date.now() - message.createdTimestamp;
             message.reply(`Pong! This message had a latency of ${timeTaken}ms.`);
-            replied = true;
             break;
         case "quantum":
             message.channel.send(getQuantumMessage());
-            replied = true;
             break;
         case "help":
         case "commands":
             message.channel.send(config.messages.commandsList);
             if (config.sudoers.includes(message.author.id))
                 message.reply(config.messages.commandsListSudo);
-            replied = true;
             break;
         case "sudo":
             if (config.sudoers.includes(message.author.id)) {
                 handleSystemCommand(command, args, message);   
             }
             else message.reply("Voice key incorrect. Meow!");
-            replied = true;
             break;
         default:
             message.reply(`your command was not recognized!`);
             log(`Invalid command from ${message.author.tag}: ${message.content}.`);
-            replied = true;
             break;
     }
-    return replied;
 }
 
 function getMentionOf(userID) {
@@ -180,7 +177,7 @@ function getQuantumMessage() {
 }
 
 function handleSystemCommand(command, args, message) {
-    log(`System access requested by ${message.author.tag}`);
+    log(`Sudo access requested by ${message.author.tag}`);
     if (args.length > 0) {
         const subcommand = args.shift().toLowerCase();
         switch(subcommand) {
@@ -207,7 +204,7 @@ function handleSystemCommand(command, args, message) {
                 });
                 break;
             case "version":
-                message.reply(`${client.user.tag} v${clientVersion}`);
+                message.reply(`${client.user.tag} v${config.system.clientVersion}`);
                 break;
             case "status":
                 if (!(args.length > 0)) message.reply("You forgot a command!");
@@ -241,7 +238,6 @@ function handleStatusChange(command, args) {
             log("Status cleared!");
             break;
     }
-    return;
 }
 function handleWriteToFile(dictionary, file) {
     
@@ -260,7 +256,6 @@ function handleReadFromFile(file, dictionary) {
     try {
         dictionary = JSON.parse(data);
         console.dir(dictionary);
-        return 
     }
     catch (err) {
         log('JSON parsing error: '+err.message);
@@ -270,18 +265,11 @@ function handleReadFromFile(file, dictionary) {
 
 
 
-// #################################################
-// ################ Deletion Events ################
-// #################################################
 
-client.on("messageDelete", async function(deletedMessage) {
-    if (deletedMessage.channel.id === config.channels.catcafe) {
-        deletedMessage.author.send(
-            config.messages.notACat +
-            `\n\n*Deleted Message:*\n\`${deletedMessage.content}\``);
-        log(`Message deleted in the cat-cafe. Informed ${deletedMessage.author.tag}.`);
-    }
-});
+
+
+
+
 
 
 
@@ -313,6 +301,13 @@ async function handleBrowseServer() {
         });
     }
 }
+
+
+
+
+
+
+
 
 
 
@@ -378,6 +373,13 @@ function checkMadeOfWords(word, words) {
     // true if word made of any one word
     return wordsCheckList.includes(true);
 }
+
+
+
+
+
+
+
 
 
 
