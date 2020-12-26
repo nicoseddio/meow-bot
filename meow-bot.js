@@ -15,11 +15,12 @@
 // #################################################
 
 const Discord = require('discord.js');
-const fetch = require("node-fetch");
-const { exec } = require('child_process');
-const fs = require('fs');
+const fetch = require("node-fetch"); // for getting cat pics
+const { exec } = require('child_process'); // for bash commands
+const fs = require('fs'); // file operations
 const auth = require('./auth.json');
-const configFileName = './config.json';
+const { ok } = require('assert');
+const configFileName = './config.json'; // for config file saving
 const config = require(configFileName);
 
 // #################################################
@@ -35,8 +36,8 @@ client.on('ready', () => {
     console.log();
     log(`Logged in as ${client.user.tag}!`);
 
-    log(`Browsing the server...`);
-    handleBrowseServer();
+    // log(`Browsing the server...`);
+    // handleBrowseServer();
 });
 
 
@@ -60,11 +61,12 @@ client.on("message", async function(message) {
     // cat-cafe moderation
     if (message.channel.id === config.channels.catcafe) {
         handleNoCatsCheck(message);
-
         if (message.content === "CAT") {
             log(`${message.author.tag} wants a cat!`)
             handleCatPostRequest(message.channel);
         }
+        handleCatReply(message.channel);
+        return;
     }
 
     // message content processing
@@ -129,6 +131,8 @@ function handleCommand(command, args, message) {
         c = args.shift().toLowerCase();
     switch(c) {
         case "test":
+            message.reply(checkMadeOfWords('catcatscat',['cat','cats'],false));
+            message.reply(checkMadeOfWords('catdogscat',['cat','cats'],false));
             break;
         case "praise":
         case "meow":
@@ -261,6 +265,24 @@ function handleReadFromFile(file, dictionary) {
         log('JSON parsing error: '+err.message);
     }
 }
+async function handleCatReply(channel,time_sleep_ms=10000,num_fetched_messages=10) {
+    await sleep(time_sleep_ms);
+    channel.messages.fetch({limit:num_fetched_messages}).then(msgs => {
+        // filters last 10 messages for meow-bot responses and images/links.
+        // If the last message was not meow-bot, meow-bot comments 'cat'.
+        if (    !(msgs.filter(
+                    msg =>
+                        msg.content.includes('http')
+                        || msg.attachments.size > 0
+                        || msg.author.id == client.user.id
+                    ).first().author.id == client.user.id
+                )
+            ) {
+                channel.send('cat');
+                log("That's a kitty!");
+        }
+    });
+}
 
 
 
@@ -338,7 +360,7 @@ async function handleNoCatsCheck(message) {
         }
     }
     if (config.global.moderateCats && notCats) {
-        sleep(500);
+        await sleep(500);
         message.delete();
         // delete notification now handled by client.on("messageDelete")
         //     to allow for cat-god moderation
@@ -346,32 +368,54 @@ async function handleNoCatsCheck(message) {
     }
 }
 /**
- * Check whether a word is made of multiples of another word.
+ * Check whether a word is made of other words.
  * @param {string} word - Primary word to check against.
- * @param {string[]} words - Array of words to check individually in primary word.
+ * @param {string[]} words - Array of words to check in primary word.
+ * @param {boolean} exclusive - Whether word should only contain any one of words.
  */
-function checkMadeOfWords(word, words) {
-    let wordsCheckList = [];
-    for (w in words) {
+function checkMadeOfWords(word, words, exclusive=false) {
+    if (exclusive) {
+        let wordsCheckList = [];
+        for (w in words) {
+            let work = word;
+            let okay = true;
+            // while viable w-length sections left
+            while (work.length >= words[w].length && okay) {
+                // check current w-length section
+                if (work.startsWith(words[w])) {
+                    // move to next w-length section
+                    work = work.substring(words[w].length);
+                }
+                else {
+                    // terminate current word
+                    okay = false;
+                }
+            }
+            // document result of check
+            wordsCheckList.push(okay);
+        }
+        // true if word made of any one words
+        return wordsCheckList.includes(true);
+    } else {
         let work = word;
         let okay = true;
-        // while viable w-length sections left
-        while (work.length >= words[w].length && okay) {
-            // check current w-length section
-            if (work.startsWith(words[w])) {
-                // move to next w-length section
-                work = work.substring(words[w].length);
+        let swords = words.sort().reverse();
+        // same logic as above,
+        //   but checks all words on every w-length section
+        while (work.length > 0 && okay) {
+            let passed = false;
+            for (w in swords) {
+                if (work.startsWith(swords[w])) {
+                    work = work.substring(swords[w].length);
+                    passed = true;
+                    break;
+                }
             }
-            else {
-                // terminate current word
+            if (!passed)
                 okay = false;
-            }
         }
-        // document result of check
-        wordsCheckList.push(okay);
+        return okay;
     }
-    // true if word made of any one word
-    return wordsCheckList.includes(true);
 }
 
 
