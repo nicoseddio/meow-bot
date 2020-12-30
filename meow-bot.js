@@ -131,8 +131,6 @@ function handleCommand(command, args, message) {
         c = args.shift().toLowerCase();
     switch(c) {
         case "test":
-            message.reply(checkMadeOfWords('catcatscat',['cat','cats'],false));
-            message.reply(checkMadeOfWords('catdogscat',['cat','cats'],false));
             break;
         case "praise":
         case "meow":
@@ -152,8 +150,6 @@ function handleCommand(command, args, message) {
         case "help":
         case "commands":
             message.channel.send(config.messages.commandsList);
-            if (config.sudoers.includes(message.author.id))
-                message.reply(config.messages.commandsListSudo);
             break;
         case "sudo":
             if (config.sudoers.includes(message.author.id)) {
@@ -449,32 +445,3 @@ async function log(string_s) {
 function sleep(ms = 2000) {
     return new Promise(resolve => setTimeout(resolve, ms));
 } //example: await sleep(2000); //sleep for 2 seconds
-function parseMessageLink(link) {
-    log(`Attempting to parse link: ${link}`)
-    try{
-        const ls = link.split('/');
-        const ids = {
-            "guildID": ls[4],
-            "channelID": ls[5],
-            "messageID": ls[6]
-        };
-        log(`Parse Successful:`
-            +` Guild ID: ${ids["guildID"]},`
-            +` Channel ID: ${ids["channelID"]},`
-            +` Message ID: ${ids["messageID"]}`);
-        return {"success": true, "ids": ids};
-    } catch(error) {
-        log("Parse Failure, error:" + error);
-        return {"success": false};
-    }
-}
-// function checkRole(role, message) {
-//     if (message.guild.id == config.guilds.thejasminedragon) {
-//         if(message.member.roles.cache.get(config.roles[role])) {
-//             return true;
-//         } else {
-//             return false;
-//         }
-//     }
-//     else return false;
-// }

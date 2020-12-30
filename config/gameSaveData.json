@@ -1,0 +1,30 @@
+{
+    "guilds": {
+        "726982067136757853": {
+            "name": "The Jasmine Dragon"
+        }
+    },
+    "players": {
+        "default": {
+            "username": "default",
+            "gamestats": {
+                "bang": {
+                    "duckAccuracy": 0.5,
+                    "bearAccuracy": 0.5,
+                    "fishAccuracy": 0.5,
+                    "ducksShot": 0,
+                    "bearsTrapped": 0,
+                    "fishCaught": 0
+                }
+            }
+        },
+        "446468247756341250": {
+            "username": "Nikorokia",
+            "gamestats": {
+                "bang": {
+                    "duckAccuracy": 0.5
+                }
+            }
+        }
+    }
+}
