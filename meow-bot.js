@@ -291,46 +291,6 @@ async function handleCatReply(channel,time_sleep_ms=10000,num_fetched_messages=1
 
 
 
-
-// #################################################
-// ############# Passive Functionality #############
-// #################################################
-
-async function handleBrowseServer() {
-    let lastCheckTime = new Date();
-    while(true) {
-        handleRespondToCats(client.channels.cache.get(config.channels.catcafe));
-        await sleep(10*60*1000); // m * s * ms
-        lastCheckTime = new Date();
-    }
-
-    async function handleRespondToCats(channel) {
-        channel.messages.fetch({limit:10}).then(messages => {
-            // filters last 10 messages for meow-bot responses and images/links.
-            // If the last message was not meow-bot, meow-bot comments 'cat'.
-            if (    !(messages.filter( message =>
-                        message.content.includes('http')
-                        || message.attachments.size > 0
-                        || message.author.id == client.user.id
-                    ).first().author.id == client.user.id)) {
-                channel.send('cat');
-                log("That's a kitty!");
-            }
-        });
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
 // #################################################
 // ########### Domain-Specific Functions ###########
 // #################################################
@@ -345,12 +305,11 @@ async function handleNoCatsCheck(message) {
     const words = message.content.split(' ');
     let notCats = false;
     for (w in words) {
-        if ( !( checkMadeOfWords(words[w].toLowerCase(),['cat','cats'])
-                //     words[w].toLowerCase() === "cat"
-                // ||  words[w].toLowerCase() === "cats"
-                ||  words[w] === ""
-                ||  words[w].includes("http") 
-                // ||  words[w].startsWith("http")
+        let word = String(words[w].toLowerCase());
+        if ( !( checkMadeOfWords(word,['cat','cats'])
+                ||  word === ""
+                // ||  words[w].includes("http") 
+                ||  word.startsWith("http")
             ) ) {
                 notCats = true;
         }
@@ -360,7 +319,7 @@ async function handleNoCatsCheck(message) {
         message.delete();
         // delete notification now handled by client.on("messageDelete")
         //     to allow for cat-god moderation
-        log(`That's not a kittie!`);
+        log(`That's not a kitty!`);
     }
 }
 /**
@@ -429,6 +388,10 @@ function checkMadeOfWords(word, words, exclusive=false) {
 // ############ Global Helper Functions ############
 // #################################################
 
+/**
+ * Timestamped message, sent to console and file.
+ * @param {String} string_s - message to put to console and file.
+ */
 async function log(string_s) {
     const t = new Date();
     const stamp = 
@@ -442,6 +405,10 @@ async function log(string_s) {
     logStream.write(logMessage+'\n');
     console.log(logMessage);
 }
+/**
+ * Pause thread. Example: `await sleep(2000)`
+ * @param {number} ms - Length of time to sleep in milliseconds.
+ */
 function sleep(ms = 2000) {
     return new Promise(resolve => setTimeout(resolve, ms));
-} //example: await sleep(2000); //sleep for 2 seconds
+}
