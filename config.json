@@ -1,27 +1,25 @@
 {
-    "apps": [
-        "./lib/apps/CatDelivery",
-        "./lib/apps/Quantum"
-    ],
-    "channels": {
-        "welcome": "739292295236550676",
-        "announcements": "726987017778495488",
-        "catcafe": "767240063301713951",
-        "commonroom": "726982067941802108",
-        "testingchannel": "769637262555217951",
-        "meowbot": "769696060737847348"
+    "apps": {
+        "CatDelivery": {
+            "name": "CatDelivery",
+            "file": "./lib/apps/CatDelivery",
+            "enabled": true,
+            "appSettings": {}
+        },
+        "Quantum": {
+            "name": "Quantum",
+            "file": "./lib/apps/Quantum",
+            "enabled": true,
+            "appSettings": {}
+        }
     },
-    "users": {
-        "446468247756341250": "nikorokia",
-        "769241485617922088": "meow-bot"
+    "channels": {
+        "catcafe": "767240063301713951",
+        "meowbot": "769696060737847348"
     },
     "guilds": {
         "726982067136757853": "thejasminedragon"
     },
-    "global": {
-        "moderateCats": true
-    },
-    "favoriteUser": "",
     "holidays": {
         "United States National Cat Day": {
             "date": "2005-10-29T04:00:00.000Z",
@@ -44,6 +42,6 @@
         "446468247756341250"
     ],
     "system": {
-        "clientVersion": 1.003
+        "clientVersion": 1.004
     }
 }

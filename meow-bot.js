@@ -23,6 +23,8 @@ const { ok } = require('assert');
 const configFileName = './config.json'; // for config file saving
 const config = require(configFileName);
 
+const Messages = require('./lib/system/Messages')
+
 // #################################################
 // ################ System Startup #################
 // #################################################
@@ -38,21 +40,15 @@ client.on('ready', () => {
 });
 
 
-// const CatDelivery = require('./lib/apps/CatDelivery');
-// const Quantum = require('./lib/apps/Quantum.js');
-// let apps = {
-//     // bang_game: require('./lib/bang_game.js'),
-//     CatDelivery: new CatDelivery(),
-//     Quantum: new Quantum(),
-// }
-
 // load in apps from config.json
 apps = {}
 for (a in config.apps) {
-    const req = require(config.apps[a]);
-    // get app name from filename string
-    let n = String(config.apps[a]).split('/').slice(-1)[0].split('.')[0];
-    apps[n] = new req();
+    if (config.apps[a].enabled) {
+        const app = require(config.apps[a].file);
+        // get app name from filename string
+        // let n = String(config.apps[a]).split('/').slice(-1)[0].split('.')[0];
+        apps[config.apps[a].name] = new app(client,config.apps[a].appSettings);
+    }
 }
 
 
@@ -146,9 +142,10 @@ function handleCommand(command, args, message) {
     switch(c) {
         case "test":
             // apps.CatDelivery.handle(message);
-            apps.Quantum.handle(message);
-            apps.CatDelivery.handle(message);
-            handleWriteToFile(apps, 'testwrite.json');
+            // apps.Quantum.handle(message);
+            // apps.CatDelivery.handle(message);
+            // handleWriteToFile(apps, 'testwrite.json');
+            message.reply(Messages.get('commandsList'));
             break;
         case "praise":
         case "meow":
@@ -235,12 +232,44 @@ function handleSystemCommand(command, args, message) {
                 message.reply("Saving config file!");
                 handleWriteToFile(config, configFileName);
                 break;
-            case "listapps":
-                let m = `${getMentionOf(client.user.id)}'s installed apps:`;
-                for (a in config.apps) {
-                    m += `\n- \`${String(config.apps[a]).split('/').slice(-1)[0].split('.')[0]}\``;
+            // case "listapps":
+            //     let m = `${getMentionOf(client.user.id)}'s installed apps:`;
+            //     for (a in config.apps) {
+            //         m += `\n- \`${String(config.apps[a]).split('/').slice(-1)[0].split('.')[0]}\``;
+            //     }
+            //     message.reply(m);
+            case "apt":
+                if (args.length > 0) {
+                    let aptCommand = args[0];
+                    switch (aptCommand) {
+                        case "list":
+                        case "ls":
+                            let m = `${getMentionOf(client.user.id)}'s enabled apps:`;
+                            for (a in config.apps) {
+                                if (config.apps[a].enabled)
+                                    m += `\n- \`${config.apps[a].name}\``;
+
+                            }
+                            message.reply(m);
+                            break;
+                        case "install":
+                            if (args.length < 2) {
+                                message.reply("No app filename provided.");
+                                break;
+                            }
+                            let newAppFile = args[1];
+                            let newAppName = String(newAppFile).split('/').slice(-1)[0].split('.')[0];
+                            config.apps[newAppName] = {};
+                            config.apps[newAppName].name = newAppName;
+                            config.apps[newAppName].file = newAppFile;
+                            config.apps[newAppName].enabled = true;
+                            config.apps[newAppName].appSettings = {};
+                            handleWriteToFile(config,configFileName);
+                            message.reply(`${newAppName} installed! Restart meow-bot to use it!`);
+                            break;
+                    }
                 }
-                message.reply(m);
+                break;
         }
     }
     else message.reply(config.messages.commandsListSudo);
@@ -339,7 +368,7 @@ async function handleNoCatsCheck(message) {
                 notCats = true;
         }
     }
-    if (config.global.moderateCats && notCats) {
+    if (notCats) {
         await sleep(500);
         message.delete();
         // delete notification now handled by client.on("messageDelete")
