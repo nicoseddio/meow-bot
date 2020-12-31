@@ -1,7 +1,7 @@
 # meow-bot
 
 ## meow-bot commands logic tree
-![commandlogic](images/commandlogic.png)
+![commandlogic](lib/images/commandlogic.png)
 
 
 ## Configuring the Raspberry Pi

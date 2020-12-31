@@ -35,10 +35,25 @@ client.login(auth.token);
 client.on('ready', () => {
     console.log();
     log(`Logged in as ${client.user.tag}!`);
-
-    // log(`Browsing the server...`);
-    // handleBrowseServer();
 });
+
+
+// const CatDelivery = require('./lib/apps/CatDelivery');
+// const Quantum = require('./lib/apps/Quantum.js');
+// let apps = {
+//     // bang_game: require('./lib/bang_game.js'),
+//     CatDelivery: new CatDelivery(),
+//     Quantum: new Quantum(),
+// }
+
+// load in apps from config.json
+apps = {}
+for (a in config.apps) {
+    const req = require(config.apps[a]);
+    // get app name from filename string
+    let n = String(config.apps[a]).split('/').slice(-1)[0].split('.')[0];
+    apps[n] = new req();
+}
 
 
 
@@ -92,7 +107,6 @@ client.on("message", async function(message) {
         && message.channel.id != config.channels.catcafe) {
             message.reply("meow!");
     }
-
 });
 
 client.on("messageDelete", async function(deletedMessage) {
@@ -131,6 +145,10 @@ function handleCommand(command, args, message) {
         c = args.shift().toLowerCase();
     switch(c) {
         case "test":
+            // apps.CatDelivery.handle(message);
+            apps.Quantum.handle(message);
+            apps.CatDelivery.handle(message);
+            handleWriteToFile(apps, 'testwrite.json');
             break;
         case "praise":
         case "meow":
@@ -171,7 +189,7 @@ function getQuantumMessage() {
     const randomnum = Math.random();
     const threshhold = 0.5;
     if (randomnum < threshhold)
-       return("Your cat is dead! |0>, q("+randomnum+")");
+        return("Your cat is dead! |0>, q("+randomnum+")");
     else
         return("Your cat is alive! |1>, q("+randomnum+")");
 }
@@ -217,6 +235,12 @@ function handleSystemCommand(command, args, message) {
                 message.reply("Saving config file!");
                 handleWriteToFile(config, configFileName);
                 break;
+            case "listapps":
+                let m = `${getMentionOf(client.user.id)}'s installed apps:`;
+                for (a in config.apps) {
+                    m += `\n- \`${String(config.apps[a]).split('/').slice(-1)[0].split('.')[0]}\``;
+                }
+                message.reply(m);
         }
     }
     else message.reply(config.messages.commandsListSudo);
@@ -301,6 +325,7 @@ async function handleCatPostRequest(channel) {
     channel.send(file);
     channel.send("cat");
 }
+
 async function handleNoCatsCheck(message) {
     const words = message.content.split(' ');
     let notCats = false;

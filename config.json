@@ -1,4 +1,8 @@
 {
+    "apps": [
+        "./lib/apps/CatDelivery",
+        "./lib/apps/Quantum"
+    ],
     "channels": {
         "welcome": "739292295236550676",
         "announcements": "726987017778495488",
@@ -9,8 +13,7 @@
     },
     "users": {
         "446468247756341250": "nikorokia",
-        "769241485617922088": "meow-bot",
-        "32544756333359923": "bri"
+        "769241485617922088": "meow-bot"
     },
     "guilds": {
         "726982067136757853": "thejasminedragon"
@@ -30,7 +33,7 @@
         }
     },
     "messages": {
-        "commandsList": "\nMeow!\nmeow-bot supports the following commands:\n- `meow`\n- `commands`\n- `ping`\n- `quantum`\nEnjoy your meow-bot!",
+        "commandsList": "\nMeow!\n<@!769241485617922088> supports the following commands:\n- `meow`\n- `commands`\n- `ping`\n- `quantum`\n<@!769241485617922088> admins can use `sudo` commands.\nEnjoy your meow-bot!",
         "notACat": "\nMeow!\nThanks for posting to the <#767240063301713951>!\nOne of your messages was deleted because it doesn't fit the channel theme:\n**Only 'cat'** and media of **cats** may be posted.\nThe residing _cat-god_ is tasked with nurturing proper cat worship.\nPlease repost to the <#767240063301713951>!\nWe want to see your kitties!",
         "commandsListSudo": "Sudo Commands:\n- `shutdown`\n- `update`\n- `version`\n- `saveconfig`\n- `status [set [TYPE] [msg], clear]`\n  `TYPEs: PLAYING/STREAMING/LISTENING/WATCHING/COMPETING`"
     },
@@ -41,6 +44,6 @@
         "446468247756341250"
     ],
     "system": {
-        "clientVersion": 1.002
+        "clientVersion": 1.003
     }
 }
