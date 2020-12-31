@@ -3,3 +3,4 @@ auth.json
 logfile.txt
 meow-bot-mini/miniauth.json
 meow-bot-mini/minilogfile.txt
+node_modules
