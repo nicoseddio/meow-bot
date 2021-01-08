@@ -1,10 +1,5 @@
 // docs https://discord.js.org/#/
-// guide https://www.digitalocean.com/community/tutorials/how-to-build-a-discord-bot-with-node-js
 
-// function naming scheme:
-// - getFoo: returned value expected
-// - handleFoo: no returned value expected
-// - checkFoo: returned boolean expected
 
 
 
@@ -23,7 +18,9 @@ const { ok } = require('assert');
 const configFileName = './config.json'; // for config file saving
 const config = require(configFileName);
 
-const Messages = require('./lib/system/Messages')
+const Messages = require('./lib/extensions/Messages');
+const Apt = require('./lib/extensions/Apt');
+
 
 // #################################################
 // ################ System Startup #################
@@ -41,15 +38,36 @@ client.on('ready', () => {
 
 
 // load in apps from config.json
-apps = {}
+const Apps = {}
+const EventListeners = {}
+const CommandsLookup = {}
 for (a in config.apps) {
     if (config.apps[a].enabled) {
         const app = require(config.apps[a].file);
-        // get app name from filename string
-        // let n = String(config.apps[a]).split('/').slice(-1)[0].split('.')[0];
-        apps[config.apps[a].name] = new app(client,config.apps[a].appSettings);
+        Apps[config.apps[a].name] = new app(
+            client,
+            config.apps[a].appSettings
+        );
+
+        for (e in config.apps[a].associatedEvents) {
+            if (!(config.apps[a].associatedEvents[e] in EventListeners))
+                EventListeners[
+                    config.apps[a].associatedEvents[e]
+                ] = [];
+            EventListeners[
+                config.apps[a].associatedEvents[e]
+            ].push(config.apps[a].name);
+        }
+
+        for (c in config.apps[a].associatedCommandAliases) 
+            CommandsLookup[
+                config.apps[a].associatedCommandAliases[c]
+            ] = config.apps[a].name;
+        
     }
 }
+
+
 
 
 
@@ -87,7 +105,7 @@ client.on("message", async function(message) {
       // bang processing
     if (command.startsWith(config.prefixes.games)) {
         const strippedcommand = command.slice(config.prefixes.games.length);
-        handleBangCommand(strippedcommand, args, message);
+        handleAppCommand(strippedcommand, message);
     } // meow-bot DM processing
     else if (message.channel.type === 'dm') {
         handleCommand(command, args, message);
@@ -108,7 +126,7 @@ client.on("message", async function(message) {
 client.on("messageDelete", async function(deletedMessage) {
     if (deletedMessage.channel.id === config.channels.catcafe) {
         deletedMessage.author.send(
-            config.messages.notACat +
+            Messages.get('notACat') +
             `\n\n*Deleted Message:*\n\`${deletedMessage.content}\``);
         log(`Message deleted in the cat-cafe. Informed ${deletedMessage.author.tag}.`);
     }
@@ -128,11 +146,9 @@ client.on("messageDelete", async function(deletedMessage) {
 // ############### Utility Functions ###############
 // #################################################
 
-function handleBangCommand(command, args, message) {
-    switch(command) {
-        case "quantum":
-            message.channel.send(getQuantumMessage());
-            break;
+function handleAppCommand(command, message) {
+    if (command in CommandsLookup) {
+        Apps[CommandsLookup[command]].handle(message);
     }
 }
 function handleCommand(command, args, message) {
@@ -145,7 +161,12 @@ function handleCommand(command, args, message) {
             // apps.Quantum.handle(message);
             // apps.CatDelivery.handle(message);
             // handleWriteToFile(apps, 'testwrite.json');
-            message.reply(Messages.get('commandsList'));
+            // testObj = {}
+            // testObj.CommandsLookup = CommandsLookup;
+            // testObj.EventListeners = EventListeners;
+            // handleWriteToFile(testObj,'testwrite.json');
+            console.log(CommandsLookup);
+            console.log(EventListeners);
             break;
         case "praise":
         case "meow":
@@ -164,13 +185,13 @@ function handleCommand(command, args, message) {
             break;
         case "help":
         case "commands":
-            message.channel.send(config.messages.commandsList);
+            message.reply(Messages.get('commandsList'));
             break;
         case "sudo":
             if (config.sudoers.includes(message.author.id)) {
                 handleSystemCommand(command, args, message);   
             }
-            else message.reply("Voice key incorrect. Meow!");
+            else message.reply("Meow! Voice key incorrect.");
             break;
         default:
             message.reply(`your command was not recognized!`);
@@ -232,47 +253,29 @@ function handleSystemCommand(command, args, message) {
                 message.reply("Saving config file!");
                 handleWriteToFile(config, configFileName);
                 break;
-            // case "listapps":
-            //     let m = `${getMentionOf(client.user.id)}'s installed apps:`;
-            //     for (a in config.apps) {
-            //         m += `\n- \`${String(config.apps[a]).split('/').slice(-1)[0].split('.')[0]}\``;
-            //     }
-            //     message.reply(m);
             case "apt":
-                if (args.length > 0) {
-                    let aptCommand = args[0];
-                    switch (aptCommand) {
-                        case "list":
-                        case "ls":
-                            let m = `${getMentionOf(client.user.id)}'s enabled apps:`;
-                            for (a in config.apps) {
-                                if (config.apps[a].enabled)
-                                    m += `\n- \`${config.apps[a].name}\``;
-
-                            }
-                            message.reply(m);
-                            break;
-                        case "install":
-                            if (args.length < 2) {
-                                message.reply("No app filename provided.");
-                                break;
-                            }
-                            let newAppFile = args[1];
-                            let newAppName = String(newAppFile).split('/').slice(-1)[0].split('.')[0];
-                            config.apps[newAppName] = {};
-                            config.apps[newAppName].name = newAppName;
-                            config.apps[newAppName].file = newAppFile;
-                            config.apps[newAppName].enabled = true;
-                            config.apps[newAppName].appSettings = {};
-                            handleWriteToFile(config,configFileName);
-                            message.reply(`${newAppName} installed! Restart meow-bot to use it!`);
-                            break;
-                    }
+                if (!(args.length > 0)) {
+                    message.reply("Usage:\n`sudo apt {list | install {filename}}`");
+                    break;
+                }
+                let aptCommand = args[0];
+                switch (aptCommand) {
+                    case "list":
+                    case "ls":
+                        message.reply(Apt.list(config.apps));
+                        break;
+                    case "install":
+                        if (args.length > 1)
+                            Apt.install(args[1], config.apps);
+                    case "remove":
+                        if (args.length > 1)
+                            Apt.remove(args[1], config.apps);
                 }
                 break;
         }
+        handleWriteToFile(config, configFileName);
     }
-    else message.reply(config.messages.commandsListSudo);
+    else message.reply(Messages.get('commandsListSudo'));
 }
 function handleStatusChange(command, args) {
     switch(command) {
@@ -314,7 +317,7 @@ function handleReadFromFile(file, dictionary) {
         log('JSON parsing error: '+err.message);
     }
 }
-async function handleCatReply(channel,time_sleep_ms=10000,num_fetched_messages=10) {
+async function handleCatReply(channel,time_sleep_ms=20000,num_fetched_messages=10) {
     await sleep(time_sleep_ms);
     channel.messages.fetch({limit:num_fetched_messages}).then(msgs => {
         // filters last 10 messages for meow-bot responses and images/links.

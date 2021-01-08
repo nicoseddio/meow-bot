@@ -4,13 +4,29 @@
             "name": "CatDelivery",
             "file": "./lib/apps/CatDelivery",
             "enabled": true,
+            "associatedEvents": [],
+            "associatedCommandAliases": {"cat":"cat"},
             "appSettings": {}
         },
         "Quantum": {
             "name": "Quantum",
             "file": "./lib/apps/Quantum",
             "enabled": true,
+            "associatedEvents": [],
+            "associatedCommandAliases": {"quantum":"quantum"},
             "appSettings": {}
+        },
+        "MusicStreamer": {
+            "name": "MusicStreamer",
+            "file": "./lib/apps/MusicStreamer",
+            "enabled": true,
+            "associatedEvents": [],
+            "associatedCommandAliases": {"play":"play", "stop":"stop", "skip":"skip"},
+            "appSettings": {}
+        }
+    },
+    "System": {
+        "settings": {
         }
     },
     "channels": {
@@ -41,7 +57,6 @@
     "sudoers": [
         "446468247756341250"
     ],
-    "system": {
-        "clientVersion": 1.004
-    }
+    "clientVersion": 1.004,
+    "prefix": ""
 }

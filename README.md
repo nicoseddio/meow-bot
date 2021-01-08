@@ -1,5 +1,11 @@
 # meow-bot
 
+## Installation
+`npm` are not included in this repository. To take full advantage of the `meow-bot`, you'll need to install the following Node.js packages via npm:  
+```
+npm install discord.js ffmpeg fluent-ffmpeg @discordjs/opus ytdl-core --save
+```
+
 ## meow-bot commands logic tree
 ![commandlogic](lib/images/commandlogic.png)
 
