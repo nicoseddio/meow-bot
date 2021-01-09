@@ -2,7 +2,7 @@
     "name": "meow-bot",
     "version": "1.0.0",
     "description": "cat",
-    "main": "bot.js",
+    "main": "meow-bot.js",
     "author": "Nico Seddio",
     "dependencies": {
         "@discordjs/opus": "^0.3.3",

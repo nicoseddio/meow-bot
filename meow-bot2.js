@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const auth = require('./testauth.json');
+const auth = require('./auth.json');
 
     const fs = require('fs');
     const configFileName = './config.json'; // for config file saving
@@ -16,6 +16,8 @@ client.on('ready', () => {
 
     prefixes.push(`<@!${client.user.id}>`);
     // test()
+    let stuff = loadApps('./lib/apps/',cfg);
+    console.log(cfg.Apps);
 });
 
 
@@ -37,80 +39,69 @@ client.on('messageDelete', async function(message) {
     
 });
 
-function loadApps(dir='./lib/apps/',cmdAliases={}) {
-    const appExt = '.app';
+function loadApps(dir='./lib/apps/',config={},appExt='.app') {
     const apps = {};
-    const events = {};
-    let files = [];
-    try {
-        files = fs.readdirSync(dir);
-    } catch (error) {
-        throw new Error(`${dir} is not a valid directory.`);
-    }
-
-    for (f in files) {
-        let appFileName = files[f];
-        if (appFileName.endsWith(appExt)) {
-            let appName = 
-                appFileName.substring(
-                    0,
-                    appFileName.length-appExt.length
-                );
-            let appFileNamePath = `${dir}${appFileName}/${appName}`;
-            const app = require(appFileNamePath);
-            apps[appName] = new app;
-
-            let reqs = apps[appName].listeners();
-
-            events[appName] = reqs.events;
-
-            for (c in reqs.commands) {
-                let a = reqs.commands[c];
-                if (!(a in cmdAliases)) {
-                    cmdAliases[a] = appName;
-                } else {
-                    cmdAliases[`${appName}-${a}`] =
-                        appName;
-                }
-            }
+    fs.readdirSync(dir).forEach(function (appName) {
+        if (appName.endsWith(appExt)) {
+            const app = require(dir+appName);
+            apps[appName.replace(appExt,'')] = new app;
         }
-    }
+      
+        // __defineGetter__ is a getter method which will be called if particluar
+        // property (or submodule in our case) will be requested
+        // exports.__defineGetter__(appName, function () {
+      
+        //   return require('./submodules/' + appName);
+      
+        // });
+      
+      });
+      config.Apps = apps;
+    // const appExt = '.app';
+    // const apps = {};
+    // const events = {};
+    // let files = [];
+    // try {
+    //     files = fs.readdirSync(dir);
+    // } catch (error) {
+    //     throw new Error(`${dir} is not a valid directory.`);
+    // }
 
-    // clean up aliases
-    for (a in cmdAliases) {
-        let appFileName = cmdAliases[a] + appExt;
-        if (!(files.includes(appFileName))) {
-            delete cmdAliases[a];
-        }
-    }
+    // for (f in files) {
+    //     let appFileName = files[f];
+    //     if (appFileName.endsWith(appExt)) {
+    //         let appName = 
+    //             appFileName.substring(
+    //                 0,
+    //                 appFileName.length-appExt.length
+    //             );
+    //         let appFileNamePath = `${dir}${appFileName}/`;
+    //         const app = require(appFileNamePath);
+    //         apps[appName] = new app;
 
-    return {apps, cmdAliases, events};
+    //         let reqs = apps[appName].listeners();
+
+    //         events[appName] = reqs.events;
+
+    //         for (c in reqs.commands) {
+    //             let a = reqs.commands[c];
+    //             if (!(a in cmdAliases)) {
+    //                 cmdAliases[a] = appName;
+    //             } else {
+    //                 cmdAliases[`${appName}-${a}`] =
+    //                     appName;
+    //             }
+    //         }
+    //     }
+    // }
+
+    // // clean up aliases
+    // for (a in cmdAliases) {
+    //     let appFileName = cmdAliases[a] + appExt;
+    //     if (!(files.includes(appFileName))) {
+    //         delete cmdAliases[a];
+    //     }
+    // }
+
+    // return {apps, cmdAliases, events};
 }
-
-function knockPrefixes(string,prefs,knockSpaces=true) {
-    let continueChecks = true;
-    let prefFound = false;
-    while (continueChecks) {
-        prefFound = false;
-        for (p in prefs) {
-            if (string.startsWith(prefs[p])) {
-                string = string.slice(prefs[p].length);
-                prefFound = true;
-            }
-            if (string.startsWith(' ') && knockSpaces)
-                string = string.slice(1);
-        }
-        if (!prefFound)
-            continueChecks = false;
-    }
-    return string;
-}
-
-function test() {
-    console.log(
-        loadApps('./lib/apps/',{bang: "DuckGame", shoot: "DuckGame"}) 
-    );
-}
-
-exports.knockPrefixes = knockPrefixes;
-exports.loadApps = loadApps;
