@@ -1,7 +1,4 @@
 {
-    "Apps": {
-
-    },
     "apps": {
         "CatDelivery": {
             "name": "CatDelivery",
@@ -28,16 +25,12 @@
             "appSettings": {}
         }
     },
-    "System": {
-        "settings": {
-        }
-    },
     "channels": {
         "catcafe": "767240063301713951",
         "meowbot": "769696060737847348"
     },
     "guilds": {
-        "726982067136757853": "thejasminedragon"
+        "726982067136757853": "The Jasmine Dragon"
     },
     "holidays": {
         "United States National Cat Day": {
