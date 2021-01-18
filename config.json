@@ -1,28 +1,30 @@
 {
     "apps": {
-        "CatDelivery": {
-            "name": "CatDelivery",
-            "file": "./lib/apps/CatDelivery",
-            "enabled": true,
-            "associatedEvents": [],
-            "associatedCommandAliases": {"cat":"cat"},
-            "appSettings": {}
+        "System": {
+            "name": "System",
+            "file": "./lib/System",
+            "disabled": "true",
+            "commands": {
+                "sudo": "sudo"
+            }
         },
         "Quantum": {
             "name": "Quantum",
             "file": "./lib/apps/Quantum",
-            "enabled": true,
-            "associatedEvents": [],
-            "associatedCommandAliases": {"quantum":"quantum"},
-            "appSettings": {}
+            "events": [],
+            "commands": {
+                "quantum": "quantum"
+            }
         },
         "MusicStreamer": {
             "name": "MusicStreamer",
             "file": "./lib/apps/MusicStreamer",
-            "enabled": true,
-            "associatedEvents": [],
-            "associatedCommandAliases": {"play":"play", "stop":"stop", "skip":"skip"},
-            "appSettings": {}
+            "events": [],
+            "commands": {
+                "play": "play",
+                "stop": "stop",
+                "skip": "skip"
+            }
         }
     },
     "channels": {
@@ -52,8 +54,8 @@
     ],
     "version": "2.00.00",
     "prefixes": [
-        "<@!769241485617922088>",
         "!",
-        "<@!769241485617922088>"
+        "<@!769241485617922088>",
+        "<@769241485617922088>"
     ]
 }

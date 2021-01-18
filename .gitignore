@@ -1,6 +1,4 @@
-auth.json
-*/.DS_Store
-logfile.txt
-meow-bot-mini/miniauth.json
-meow-bot-mini/minilogfile.txt
-node_modules
+**/auth.json
+**/.DS_Store
+**/logfile.txt
+**/node_modules
