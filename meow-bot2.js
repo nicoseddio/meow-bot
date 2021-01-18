@@ -50,7 +50,7 @@ client.on('messageDelete', async function(message) {
 });
 
 
-function loadApps(appsConfig, auth, dir='./lib/apps/', appExt='.app') {
+function loadApps(appsConfig, authCfg, dir='./lib/apps/', appExt='.app') {
     const appsCache = {};
     // load in directory
     fs.readdirSync(dir).forEach(function (appFileName) {
@@ -68,13 +68,6 @@ function loadApps(appsConfig, auth, dir='./lib/apps/', appExt='.app') {
             }
         }
     });
-
-    for (let a in appsCache) {
-        let app = appsCache[a];
-        if (app.authenticate === 'function' &&
-            app.authenticate() === auth.
-    }
-
     return appsCache;
 }
 function loadCommands(appsCfg,appsCache) {
@@ -119,4 +112,12 @@ function generateToken(token,length=12) {
         );
     }
     return t;
+}
+function authorizeApps() {
+    for (let a in appsCache) {
+        let app = appsCache[a];
+        if (app.authenticate === 'function' &&
+            app.authenticate() === authCfg.cacheToken)
+            app.link()
+    }
 }
