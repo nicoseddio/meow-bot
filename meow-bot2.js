@@ -4,19 +4,19 @@ const auth = require('./auth.json');
     const fs = require('fs');
     const configFileName = './config.json'; // for config file saving
     const config = require(configFileName);
-    const appsCache = loadApps(config.apps, auth);
-    const commandsCache = loadCommands(config.apps,appsCache);
-    const eventsCache = loadEvents(appsCache);
+    const cache = {};
+    cache.apps = loadApps(config.apps);
+    cache.commands = loadCommands(config.apps,cache.apps);
+    cache.events = loadEvents(cache.apps);
+
+    sleep(2000);
+    console.log(cache);
+    console.log(cache.events.message.CatMod);
 
     process.exit();
 
-    let fullmode = config.apps.System.enabled;
-    // if (fullmode) const System = require('./lib/System');
-
 const client = new Discord.Client();
 client.login(auth.token);
-
-    // if (fullmode) const sys = new System(client,config,__dirname);
 
 client.on('ready', () => {
     console.log();
@@ -50,36 +50,36 @@ client.on('messageDelete', async function(message) {
 });
 
 
-function loadApps(appsConfig, authCfg, dir='./lib/apps/', appExt='.app') {
-    const appsCache = {};
+function loadApps(cfg, dir='./lib/apps/', appExt='.app') {
+    const aCache = {};
     // load in directory
-    fs.readdirSync(dir).forEach(function (appFileName) {
-        let appName = appFileName.replace(appExt,'');
+    fs.readdirSync(dir).forEach(function (appFile) {
         //if valid app
-        if (appFileName.endsWith(appExt)) {
+        if (appFile.endsWith(appExt)) {
+            let app = appFile.replace(appExt,'');
             //if not in config or not disabled
-            if (    !(appName in appsConfig) ||
-                    !(appsConfig[appName].disabled)
+            if (    !(app in cfg) ||
+                    !(cfg[app].disabled)
                 ) {
 
                 //initialize the app
-                const app = require(dir+appFileName);
-                appsCache[appName] = new app;
+                const appObj = require(dir+appFile);
+                aCache[app] = new appObj;
             }
         }
     });
-    return appsCache;
+    return aCache;
 }
-function loadCommands(appsCfg,appsCache) {
+function loadCommands(appsCfg,aCache) {
     const cCache = {};
-    Object.keys(appsCache).forEach(a => {
+    Object.keys(aCache).forEach(a => {
         //pull app commnds from cached app
             //if command in config aliases, use alias
                 //if alias is used, rename prioritizing cfg
             //else add command
                 //if command taken, add app_name
-        appsCache[a].commands.forEach(c => {
-            console.log(a + ": " + c)
+        aCache[a].commands.forEach(c => {
+            // console.log(a + ": " + c)
             if (a in appsCfg && c in appsCfg[a].commands) {
                 let cAlias = appsCfg[a].commands[c];
                 if (cAlias in cCache)
@@ -94,30 +94,26 @@ function loadCommands(appsCfg,appsCache) {
     });
     return cCache;
 }
-function loadEvents(appsCache) {
+function loadEvents(aCache) {
     eCache = {};
-    Object.keys(appsCache).forEach(a => {
-        appsCache[a].events.forEach(e => {
-            if (!(e in eCache)) eCache[e] = [];
-            eCache[e].push(a);
-        });
+    Object.keys(aCache).forEach(a => {
+        // aCache[a].events.forEach(e => {
+        //     if (!(e in eCache)) eCache[e] = [];
+        //     eCache[e].push(a);
+        // });
+        for (const e in aCache[a].events) {
+            console.log(e);
+            if (!(e in eCache)) eCache[e] = {};
+            eCache[e][a] = aCache[a].events[e];
+        }
     });
     return eCache;
 }
-function generateToken(token,length=12) {
-    let t = '';
-    for (let i = 0; i < length; i++) {
-        t += token.charAt(
-            Math.floor(Math.random() * Math.floor(token.length))
-        );
-    }
-    return t;
-}
-function authorizeApps() {
-    for (let a in appsCache) {
-        let app = appsCache[a];
-        if (app.authenticate === 'function' &&
-            app.authenticate() === authCfg.cacheToken)
-            app.link()
-    }
-}
+
+function sleep(milliseconds) {
+    const date = Date.now();
+    let currentDate = null;
+    do {
+      currentDate = Date.now();
+    } while (currentDate - date < milliseconds);
+  }

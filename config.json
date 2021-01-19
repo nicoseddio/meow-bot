@@ -1,25 +1,18 @@
 {
     "apps": {
         "System": {
-            "name": "System",
-            "file": "./lib/System",
             "disabled": "true",
+            "allowAdminControl": "true",
             "commands": {
                 "sudo": "sudo"
             }
         },
         "Quantum": {
-            "name": "Quantum",
-            "file": "./lib/apps/Quantum",
-            "events": [],
             "commands": {
                 "quantum": "quantum"
             }
         },
         "MusicStreamer": {
-            "name": "MusicStreamer",
-            "file": "./lib/apps/MusicStreamer",
-            "events": [],
             "commands": {
                 "play": "play",
                 "stop": "stop",
