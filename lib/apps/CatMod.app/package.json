@@ -1,7 +1,7 @@
 {
-    "name": "genericapp",
+    "name": "catmod",
     "version": "1.0.0",
-    "description": "Defines basic functions of apps.",
+    "description": "cat",
     "main": "app.js",
     "author": "Nico Seddio",
     "dependencies": {
