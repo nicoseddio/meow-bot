@@ -36,17 +36,20 @@ client.on('message', async function(message) {
 
     if (!config.prefixes.includes(command)) return;
 
-        //run through event listeners
-        // messageHandled = System.event(evnt,message);
+    //for apps in cache.events['message'].guild.channel
+        //unless app disabled for guild.channel in config
+            //pass message to app
 
-        //run through commands
-        // if (!messageHandled)
-        //     messageHandled = System.distribute(message);
+    //for apps in cache.commands
+        //unless app disabled for guild.channel in config
+            //pass message to app
     
 });
 
 client.on('messageDelete', async function(message) {
-    
+    //for apps in cache.events['messageDelete'].guild.channel
+        //unless app disabled for guild.channel in config
+            //pass message to app
 });
 
 
