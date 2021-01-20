@@ -10,16 +10,12 @@ const auth = require('./auth.json');
     cache.events = loadEvents(cache.apps);
     console.log(JSON.stringify(cache, null, 2));
 
-    process.exit();
-
 const client = new Discord.Client();
 client.login(auth.token);
 
 client.on('ready', () => {
     console.log();
     console.log(`Logged in as ${client.user.tag}!`);
-    
-    if (fullmode) sys.initialize();
 });
 
 
@@ -28,18 +24,44 @@ client.on('message', async function(message) {
     // don't operate on own commands
     if (message.author.id === client.user.id) return;
     
-    const args = message.content.split(' ');
-    const command = args.shift().toLowerCase();
+    let args = message.content.split(' ');
+    let command = args.shift().toLowerCase();
+
+    console.log(
+        `\nMessage Received:`+
+        `\n${JSON.stringify(message,null,2)}`
+    );
 
     //for apps in cache.events['message'].guild.channel
         //unless app disabled for guild.channel in config
             //pass message to app
 
-    if (!config.prefixes.includes(command)) return;
+    // if (!config.prefixes.includes(command)) return;
+    let prefixed = false;
+    for (let p in config.prefixes) {
+        if (command.startsWith(config.prefixes[p]))
+            prefixed = true;
+    }
+    if (!prefixed) return;
+    message.content = knockPrefixes(message.content,config.prefixes);
+    args = message.content.split(' ');
+    command = args.shift().toLowerCase();
 
-    //for apps in cache.commands
+
+    console.log(
+        `\nMessage Received:`+
+        `\n${JSON.stringify(message,null,2)}`
+    );
+
+    //if valid command/app pair
         //unless app disabled for guild.channel in config
             //pass message to app
+    if (command in cache.commands) {
+        let a = cache.commands[command],
+            g = message.guild.id,
+            c = message.channel.id;
+        cache.apps[a].handle(message);
+    }
     
 });
 
@@ -58,8 +80,9 @@ function loadApps(cfg, dir='./lib/apps/', appExt='.app') {
         if (appFile.endsWith(appExt)) {
             let app = appFile.replace(appExt,'');
             //if not in config or not disabled
-            if (    !(app in cfg) ||
-                    !(cfg[app].disabled)
+            if (!(app in cfg) ||
+                    ("disabled" in cfg[app] &&
+                     "systemwide" in cfg[app].disabled)
                 ) {
 
                 //initialize the app
@@ -110,6 +133,24 @@ function loadEvents(aCache) {
         })
     });
     return eCache;
+}
+function knockPrefixes(string,prefs,knockSpaces=true) {
+    let continueChecks = true;
+    let prefFound = false;
+    while (continueChecks) {
+        prefFound = false;
+        for (p in prefs) {
+            if (string.startsWith(prefs[p])) {
+                string = string.slice(prefs[p].length);
+                prefFound = true;
+            }
+            if (string.startsWith(' ') && knockSpaces)
+                string = string.slice(1);
+        }
+        if (!prefFound)
+            continueChecks = false;
+    }
+    return string;
 }
 
 function sleep(milliseconds) {

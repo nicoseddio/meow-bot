@@ -1,10 +1,10 @@
 {
+    "adminCommand": "sudo",
     "apps": {
-        "System": {
-            "disabled": "true",
-            "allowAdminControl": "true",
-            "commands": {
-                "sudo": "sudo"
+        "GenericApp": {
+            "disabled": {
+                "systemwide": true,
+                "726982067136757853": ["769696060737847348"]
             }
         },
         "Quantum": {
@@ -44,7 +44,7 @@
     "version": "2.00.00",
     "prefixes": [
         "!",
-        "<@!769241485617922088>",
-        "<@769241485617922088>"
+        "<@!791869465729433640>",
+        "<@791869465729433640>"
     ]
 }
