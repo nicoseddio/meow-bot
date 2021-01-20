@@ -5,10 +5,10 @@ const auth = require('./auth.json');
     const configFileName = './config.json'; // for config file saving
     const config = require(configFileName);
     const cache = {};
-    cache.apps = loadApps(config.apps);
-    cache.commands = loadCommands(config.apps,cache.apps);
-    cache.events = loadEvents(cache.apps);
-    console.log(JSON.stringify(cache, null, 2));
+    // cache.apps = loadApps(config.apps);
+    // cache.commands = loadCommands(config.apps,cache.apps);
+    // cache.events = loadEvents(cache.apps);
+    // console.log(JSON.stringify(cache, null, 2));
 
 const client = new Discord.Client();
 client.login(auth.token);
@@ -16,6 +16,12 @@ client.login(auth.token);
 client.on('ready', () => {
     console.log();
     console.log(`Logged in as ${client.user.tag}!`);
+
+    
+    cache.apps = loadApps(config.apps);
+    cache.commands = loadCommands(config.apps,cache.apps);
+    cache.events = loadEvents(cache.apps);
+    console.log(JSON.stringify(cache, null, 2));
 });
 
 
@@ -32,9 +38,19 @@ client.on('message', async function(message) {
         `\n${JSON.stringify(message,null,2)}`
     );
 
+    let e = cache.events['message'],
+        g = message.guild.id,
+        c = message.channel.id;
+        
+
     //for apps in cache.events['message'].guild.channel
         //unless app disabled for guild.channel in config
             //pass message to app
+    if (g in e)
+        if (c in e[g])
+            e[g][c].forEach(a => {
+                cache.apps[a].handleEvent('message',message);
+            })
 
     // if (!config.prefixes.includes(command)) return;
     let prefixed = false;
@@ -57,9 +73,7 @@ client.on('message', async function(message) {
         //unless app disabled for guild.channel in config
             //pass message to app
     if (command in cache.commands) {
-        let a = cache.commands[command],
-            g = message.guild.id,
-            c = message.channel.id;
+        let a = cache.commands[command];
         cache.apps[a].handle(message);
     }
     
@@ -69,6 +83,15 @@ client.on('messageDelete', async function(message) {
     //for apps in cache.events['messageDelete'].guild.channel
         //unless app disabled for guild.channel in config
             //pass message to app
+    
+    let event = cache.events['messageDelete'],
+        guild = message.guild.id,
+        channel = message.channel.id;
+    if (guild in event)
+        if (channel in event[guild])
+            event[guild][channel].forEach(a => {
+                cache.apps[a].handleEvent('messageDelete',message);
+            })
 });
 
 
@@ -88,6 +111,7 @@ function loadApps(cfg, dir='./lib/apps/', appExt='.app') {
                 //initialize the app
                 const appObj = require(dir+appFile);
                 aCache[app] = new appObj;
+                aCache[app].setClientID(client.user.id);
             }
         }
     });
