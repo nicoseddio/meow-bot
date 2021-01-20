@@ -1,0 +1,46 @@
+cache {
+    apps: {
+        CatMod: CatMod {
+            events: {},
+            commands: [],
+            dirname: Dir
+        }
+    },
+    commands: {
+        CAT: 'CatMod'
+    },
+    events: {
+        message: {
+            'theJasmineDragon': {
+                'cat-cafe': [
+                    CatMod
+                ]
+            }
+        }
+    } // for in...
+}
+
+config {
+    apps: {
+        CatMod: {
+            disabled: {
+                systemWide: false,
+                'theJasmineDragon': true / ['commonroom']
+            }
+        }
+    }
+}
+
+config {
+    apps: {
+        CatMod: {
+            disabled: false
+        }
+    }
+    permissions: {
+        'theJasmineDragon': {
+            enabledApps: [],
+
+        }
+    }
+}

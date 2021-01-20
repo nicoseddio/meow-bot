@@ -8,10 +8,7 @@ const auth = require('./auth.json');
     cache.apps = loadApps(config.apps);
     cache.commands = loadCommands(config.apps,cache.apps);
     cache.events = loadEvents(cache.apps);
-
-    sleep(2000);
-    console.log(cache);
-    console.log(cache.events.message.CatMod);
+    console.log(JSON.stringify(cache, null, 2));
 
     process.exit();
 
@@ -34,11 +31,11 @@ client.on('message', async function(message) {
     const args = message.content.split(' ');
     const command = args.shift().toLowerCase();
 
-    if (!config.prefixes.includes(command)) return;
-
     //for apps in cache.events['message'].guild.channel
         //unless app disabled for guild.channel in config
             //pass message to app
+
+    if (!config.prefixes.includes(command)) return;
 
     //for apps in cache.commands
         //unless app disabled for guild.channel in config
@@ -100,15 +97,17 @@ function loadCommands(appsCfg,aCache) {
 function loadEvents(aCache) {
     eCache = {};
     Object.keys(aCache).forEach(a => {
-        // aCache[a].events.forEach(e => {
-        //     if (!(e in eCache)) eCache[e] = [];
-        //     eCache[e].push(a);
-        // });
-        for (const e in aCache[a].events) {
-            console.log(e);
-            if (!(e in eCache)) eCache[e] = {};
-            eCache[e][a] = aCache[a].events[e];
-        }
+        Object.keys(aCache[a].events).forEach(g => {
+            Object.keys(aCache[a].events[g]).forEach(c => {
+                aCache[a].events[g][c].forEach(e => {
+                    if (!(e in eCache)) eCache[e] = {};
+                    if (!(g in eCache[e])) eCache[e][g] = {};
+                    if (!(c in eCache[e][g])) eCache[e][g][c] = [];
+                    if (!(eCache[e][g][c].includes(a)))
+                        eCache[e][g][c].push(a);
+                })
+            })
+        })
     });
     return eCache;
 }
@@ -117,6 +116,6 @@ function sleep(milliseconds) {
     const date = Date.now();
     let currentDate = null;
     do {
-      currentDate = Date.now();
+        currentDate = Date.now();
     } while (currentDate - date < milliseconds);
-  }
+}
