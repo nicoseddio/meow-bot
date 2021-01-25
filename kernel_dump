@@ -1,0 +1,66 @@
+{
+  "apps": {
+    "CatDelivery": {
+      "events": {
+        "791397233743626251": {
+          "796529775661023244": [
+            "message"
+          ]
+        }
+      },
+      "commands": [
+        "cat"
+      ],
+      "dirname": "/Users/nseddio/repos/meow-bot/lib/apps/CatDelivery.app",
+      "client": {
+        "user": {
+          "id": "791869465729433640"
+        }
+      }
+    },
+    "CatMod": {
+      "events": {
+        "726982067136757853": {
+          "767240063301713951": [
+            "message",
+            "messageDelete"
+          ]
+        }
+      },
+      "commands": [
+        "CAT"
+      ],
+      "dirname": "/Users/nseddio/repos/meow-bot/lib/apps/CatMod.app",
+      "client": {
+        "user": {
+          "id": "791869465729433640"
+        }
+      }
+    }
+  },
+  "commands": {
+    "cat": "CatDelivery",
+    "CAT": "CatMod"
+  },
+  "events": {
+    "message": {
+      "791397233743626251": {
+        "796529775661023244": [
+          "CatDelivery"
+        ]
+      },
+      "726982067136757853": {
+        "767240063301713951": [
+          "CatMod"
+        ]
+      }
+    },
+    "messageDelete": {
+      "726982067136757853": {
+        "767240063301713951": [
+          "CatMod"
+        ]
+      }
+    }
+  }
+}

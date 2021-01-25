@@ -2,3 +2,5 @@
 **/.DS_Store
 **/logfile.txt
 **/node_modules
+**/dump**
+**/*.log
