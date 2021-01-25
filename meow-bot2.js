@@ -212,36 +212,3 @@ class KernalBeacon extends EventEmitter {
         this.emit('messageReturned', message)
     }
 }
-
-// class Scheduler {
-//     constructor() {
-//         this.queue = [];
-//         this.ids = new Set();
-//         this.enableScheduleMonitor = true;
-//     }
-//     add(message, date) {
-//         this.queue.push(new SchedulerEvent(message,date));
-//     }
-//     generateID() {
-//         let id = 0;
-//         while(this.ids.has(id))
-//             id++;
-//         this.ids.add(id);
-//         return id;
-//     }
-//     releaseID(id) {
-//         if(this.ids.has(id))
-//             this.ids.delete(id);
-//     }
-//     async monitorSchedule() {
-//         // while(this.enableScheduleMonitor) {
-
-//         // }
-//     }
-// }
-// class SchedulerEvent {
-//     constructor(id,message,date) {
-//         this.message = message;
-//         this.date = date;
-//     }
-// }
