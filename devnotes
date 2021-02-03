@@ -23,24 +23,17 @@ cache {
 config {
     apps: {
         CatMod: {
-            disabled: {
-                systemWide: false,
-                'theJasmineDragon': true / ['commonroom']
-            }
-        }
-    }
-}
-
-config {
-    apps: {
-        CatMod: {
             disabled: false
         }
     }
-    permissions: {
+    guilds: {
         'theJasmineDragon': {
-            enabledApps: [],
-
+            'cat-cafe': [
+                CatMod
+            ],
+            all: [
+                Quantum
+            ]
         }
     }
 }
