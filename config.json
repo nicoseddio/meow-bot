@@ -2,10 +2,7 @@
     "adminCommand": "sudo",
     "apps": {
         "GenericApp": {
-            "disabled": {
-                "systemwide": true,
-                "726982067136757853": ["769696060737847348"]
-            }
+            "disabled": true
         },
         "Quantum": {
             "commands": {
@@ -18,10 +15,10 @@
                 "stop": "stop",
                 "skip": "skip"
             }
+        },
+        "CatMod.js": {
+            "settings": {}
         }
-    },
-    "channels": {
-        "meowbot": "769696060737847348"
     },
     "holidays": {
         "United States National Cat Day": {
@@ -53,7 +50,11 @@
             "apps": [],
             "channels": {
                 "767240063301713951": {
-                    "name": "cat-cafe",
+                    "notes": "cat-cafe",
+                    "apps": ["CatMod.js"]
+                },
+                "769696060737847348": {
+                    "notes": "meow-bot",
                     "apps": []
                 }
             }
