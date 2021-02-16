@@ -1,3 +1,5 @@
+const version = "2.00.00";
+
 const Discord = require('discord.js');
 const auth = require('./auth.json');
 
@@ -11,7 +13,7 @@ client.on('ready', () => {
     console.log();
     console.log(`Logged in as ${client.user.tag}!`);
 
-    kernel.initialize(client);
+    kernel.initialize(client,version);
 });
 client.on('message', async function(message) {
     if (message.author.id === client.user.id) return; //ignore self

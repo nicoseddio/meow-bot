@@ -34,17 +34,9 @@
     ],
     "guilds": {
         "726982067136757853": {
-            "name": "The Jasmine Dragon",
-            "apps": [],
-            "channels": {
-                "767240063301713951": {
-                    "notes": "cat-cafe",
-                    "apps": ["CatMod.js"]
-                },
-                "769696060737847348": {
-                    "notes": "meow-bot",
-                    "apps": []
-                }
+            "apps": {
+                "CatMod.js": ["767240063301713951"],
+                "MusicStreamer.js": []
             }
         }
     }
