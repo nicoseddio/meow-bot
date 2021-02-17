@@ -13,7 +13,7 @@ client.on('ready', () => {
     console.log();
     console.log(`Logged in as ${client.user.tag}!`);
 
-    kernel.initialize(client,version);
+    kernel.initialize(client);
 });
 client.on('message', async function(message) {
     if (message.author.id === client.user.id) return; //ignore self
