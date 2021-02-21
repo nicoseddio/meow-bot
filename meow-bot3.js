@@ -17,9 +17,8 @@ client.on('ready', () => {
 });
 client.on('message', async function(message) {
     if (message.author.id === client.user.id) return; //ignore self
-    kernel.distributeEvent('message', message);
-    kernel.distribute(message);
+    kernel.distribute(message, 'message');
 });
 client.on('messageDelete', async function(message) {
-    kernel.distributeEvent('messageDelete', message);
+    kernel.distribute(message, 'messageDelete');
 });
