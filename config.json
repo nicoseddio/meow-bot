@@ -41,7 +41,8 @@
         },
         "791397233743626251": {
             "apps": {
-                "MusicStreamer.js": ["796529775661023244"]
+                "MusicStreamer.js": ["796529775661023244"],
+                "CatDelivery.js": []
             }
         }
     }
