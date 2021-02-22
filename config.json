@@ -1,5 +1,6 @@
 {
-    "adminCommand": "sudo",
+    "lastSave": "[210221 22:16:47]",
+    "adminCommand": "!sudo",
     "apps": {
         "GenericApp": {
             "disabled": true
@@ -18,6 +19,12 @@
         },
         "CatMod.js": {
             "settings": {}
+        },
+        "CatDelivery.js": {
+            "settings": {}
+        },
+        "MusicStreamer.js": {
+            "settings": {}
         }
     },
     "sudoers": [
@@ -35,13 +42,17 @@
     "guilds": {
         "726982067136757853": {
             "apps": {
-                "CatMod.js": ["767240063301713951"],
+                "CatMod.js": [
+                    "767240063301713951"
+                ],
                 "MusicStreamer.js": []
             }
         },
         "791397233743626251": {
             "apps": {
-                "MusicStreamer.js": ["796529775661023244"],
+                "MusicStreamer.js": [
+                    "796529775661023244"
+                ],
                 "CatDelivery.js": []
             }
         }
