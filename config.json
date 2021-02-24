@@ -2,21 +2,6 @@
     "lastSave": "[210223 21:24:01]",
     "adminCommand": "!sudo",
     "apps": {
-        "GenericApp": {
-            "disabled": true
-        },
-        "Quantum": {
-            "commands": {
-                "quantum": "quantum"
-            }
-        },
-        "MusicStreamer": {
-            "commands": {
-                "play": "play",
-                "stop": "stop",
-                "skip": "skip"
-            }
-        },
         "CatMod.js": {
             "settings": {}
         },
@@ -34,11 +19,6 @@
         "meow-bot": "2.00.00",
         "meow-bot_kernel": "1.00.00"
     },
-    "prefixes": [
-        "!",
-        "<@!791869465729433640>",
-        "<@791869465729433640>"
-    ],
     "guilds": {
         "726982067136757853": {
             "adminCommand": "!admin",
