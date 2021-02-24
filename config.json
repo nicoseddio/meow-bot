@@ -1,5 +1,5 @@
 {
-    "lastSave": "[210221 22:16:47]",
+    "lastSave": "[210223 21:24:01]",
     "adminCommand": "!sudo",
     "apps": {
         "GenericApp": {
@@ -41,6 +41,10 @@
     ],
     "guilds": {
         "726982067136757853": {
+            "adminCommand": "!admin",
+            "adminUsers": [
+                "446468247756341250"
+            ],
             "apps": {
                 "CatMod.js": [
                     "767240063301713951"
@@ -49,6 +53,10 @@
             }
         },
         "791397233743626251": {
+            "adminCommand": "!admin",
+            "adminUsers": [
+                "446468247756341250"
+            ],
             "apps": {
                 "MusicStreamer.js": [
                     "796529775661023244"
