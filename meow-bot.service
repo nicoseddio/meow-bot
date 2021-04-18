@@ -1,0 +1,14 @@
+[Unit]
+Description=meow-bot for The Jasmine Dragon Discord server.
+Documentation=https://github.com/nicoseddio/meow-bot
+After=network.target
+
+[Service]
+Environment=NODE_PORT=3001
+Type=simple
+User=pi
+ExecStart=/usr/bin/screen -S meow-bot -dm /usr/local/bin/node /home/pi/repos/meow-bot/meow-bot.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

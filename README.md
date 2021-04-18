@@ -13,6 +13,34 @@ npm install discord.js ffmpeg fluent-ffmpeg @discordjs/opus ytdl-core --save
 ![commandlogic](lib/images/commandlogic.png)
 
 
+## Installing the Auto-Start Script
+1. Copy `meow-bot.service` into `/lib/systemd/system/`:
+    ```
+    sudo cp meow-bot.service /lib/systemd/system/meow-bot.service
+    ```
+2. Reload the `systemd` daemon:
+    ```
+    sudo systemctl daemon-reload
+    ```
+3. Enable the service:
+    ```
+    sudo systemctl enable meow-bot
+    ```
+4. [Optional] Start the script manually (if not first restarting):
+    ```
+    sudo systemctl start meow-bot
+    ```
+5. [Optional] Check or change the status of the service:
+    ```
+    sudo systemctl status meow-bot
+    sudo systemctl stop meow-bot
+    sudo systemctl restart meow-bot
+    sudo systemctl disable meow-bot
+    ```
+
+**Note:** `run.sh` is also present as a shortcut to start the bot manually, but is not necessary if being installed as a service.
+
+
 ## Configuring the Raspberry Pi
 `meow-bot` was written using Node v12+. As of this writing, the highest Node version officially supported by my Raspberry Pi model B (`armv6`) is v10.19.0, which breaks on some missing functions. I had to manually install an unsupported build of v12.18.3 using the following commands and [this thread](https://gist.github.com/davps/6c6e0ba59d023a9e3963cea4ad0fb516):
 ```

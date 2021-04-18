@@ -1,0 +1,1 @@
+screen -S meow-bot -dm node ~/repos/meow-bot/meow-bot.js
